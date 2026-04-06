@@ -1,2 +1,2 @@
 # Prefer the blueprint at the repository root: ../render.yaml
-# (build/start use entry scripts so monorepo root + npm ci work from any Root Directory.)
+# (build/start use entry scripts: root lockfile + npm ci -w UI only from any Root Directory.)

@@ -49,7 +49,7 @@ This repo is an **npm workspace**: the lockfile that matters is [`package-lock.j
 
 **Recommended:** Root Directory **empty** (repo root). Use [`render.yaml`](../render.yaml) at the repo root.
 
-**If Root Directory stays `mythic-plus-party-shuffle-ui`:** keep it, but the build **must** use the entry scripts so `npm ci` runs at the monorepo root (same lockfile as CI). Copy from `render.yaml`:
+**If Root Directory stays `mythic-plus-party-shuffle-ui`:** keep it, but the build **must** use the entry scripts so installs run at the monorepo root with the root lockfile. The Render script uses `npm ci -w mythic-plus-party-shuffle` (UI workspace only — avoids installing the Nest workspace on every front deploy). Copy from `render.yaml`:
 
 1. **Build command:**  
    `if [ -f mythic-plus-party-shuffle-ui/render-build-entry.sh ]; then bash mythic-plus-party-shuffle-ui/render-build-entry.sh; else bash render-build-entry.sh; fi`
