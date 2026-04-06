@@ -43,6 +43,18 @@ Used in [`app/config/apiConfig.ts`](app/config/apiConfig.ts), [`next.config.js`]
 
 **Render:** set `BACKEND_URL` (or `NEXT_PUBLIC_API_URL`) on the **Next** service so the BFF can reach the API at **runtime** (`next start`), not only at build time.
 
+### Deploy / Render (monorepo)
+
+This repo is an **npm workspace**: the lockfile that matters is [`package-lock.json`](../package-lock.json) at the **repository root**. The file `mythic-plus-party-shuffle-ui/package-lock.json` is **gitignored** and is **not** deployed.
+
+1. In Render, set **Root Directory** to **empty** (use the repo root), not `mythic-plus-party-shuffle-ui`.
+2. **Build command:** `npm ci && npm run build -w mythic-plus-party-shuffle`
+3. **Start command:** `npm run start -w mythic-plus-party-shuffle`
+4. Use the blueprint [`render.yaml`](../render.yaml) at the **repo root** (or paste the same commands in the dashboard).
+5. Set **Node 20** (e.g. env `NODE_VERSION=20.18.0` or match your `engines` field).
+
+If Root Directory is set to `mythic-plus-party-shuffle-ui`, `npm install` runs **without** a committed lockfile there and the build can fail or drift from CI.
+
 Optional branding:
 
 | Variable | Role |
