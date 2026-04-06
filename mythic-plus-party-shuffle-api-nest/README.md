@@ -26,6 +26,10 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Security (passwords)
+
+New accounts store **Argon2id** hashes (memory cost ~19 MiB, time cost 3, parallelism 4). Existing rows that still use the legacy 64-character hex HMAC format are verified on login and **re-hashed to Argon2** automatically. The `salt` column is left empty for Argon2 rows (the encoded hash embeds its own salt).
+
 ## Project setup
 
 ```bash

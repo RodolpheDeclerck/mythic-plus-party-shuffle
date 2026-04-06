@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../../shared/entities/user.entity';
 import { LoginDto, RegisterDto } from './dto';
-import { random, authentication } from '../../shared/helpers';
+import { PasswordHashingService } from './password-hashing.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +14,7 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private passwordHashingService: PasswordHashingService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -28,9 +29,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const expectedHash = authentication(user.salt, password);
-    if (user.password !== expectedHash) {
+    const check = await this.passwordHashingService.verify(user.password, user.salt, password);
+    if (!check.valid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (check.upgrade) {
+      user.password = check.upgrade.password;
+      user.salt = check.upgrade.salt;
+      await this.userRepository.save(user);
     }
 
     const token = this.generateToken(user);
@@ -57,8 +64,7 @@ export class AuthService {
       throw new ConflictException('User already exists');
     }
 
-    const salt = random();
-    const hashedPassword = authentication(salt, password);
+    const { password: hashedPassword, salt } = await this.passwordHashingService.hashPassword(password);
 
     const newUser = this.userRepository.create({
       email,
