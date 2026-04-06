@@ -27,17 +27,21 @@ npm install
 
 ## Environment variables
 
-Used in [`app/config/apiConfig.ts`](app/config/apiConfig.ts) and [`next.config.js`](next.config.js):
+Used in [`app/config/apiConfig.ts`](app/config/apiConfig.ts), [`next.config.js`](next.config.js), and the BFF route [`app/api/be/[[...path]]/route.ts`](app/api/be/[[...path]]/route.ts):
 
 | Variable | Role |
 |----------|------|
 | `NEXT_PUBLIC_API_URL` | Preferred public API base (also injected at build via `next.config` `env`) |
 | `REACT_APP_API_URL` | Legacy alias for the same value (CRA parity) |
-| `BACKEND_URL` | Optional override for **server-side** rewrite target and `getSocketUrl()` |
+| `BACKEND_URL` | Optional override for **BFF upstream** (Route Handler → Nest) and for `getSocketUrl()` |
 
-**Development:** REST calls go directly to `serverBackend()` (default `http://localhost:8080` if unset).
+**Browser (client):** REST uses same-origin **`/api/be`** → **BFF** (Next App Router) proxies to the Nest origin (`BACKEND_URL` or `NEXT_PUBLIC_API_URL` or `REACT_APP_API_URL`, default `http://localhost:8080`). This matches dev (`next dev` on port 3000) and production (e.g. Render).
 
-**Production (browser):** REST uses same-origin **`/api/be`** → rewritten to `BACKEND_URL` / `NEXT_PUBLIC_API_URL` / `REACT_APP_API_URL` (see `rewrites` in `next.config.js`). **Socket.IO** always uses `getSocketUrl()` → real backend origin (not proxied).
+**Server (RSC / SSR):** code that resolves `apiConfig` without `window` calls the backend **directly** via `serverBackend()` (same env vars).
+
+**Socket.IO** always uses `getSocketUrl()` → real backend origin (not proxied through `/api/be`).
+
+**Render:** set `BACKEND_URL` (or `NEXT_PUBLIC_API_URL`) on the **Next** service so the BFF can reach the API at **runtime** (`next start`), not only at build time.
 
 Optional branding:
 
@@ -55,8 +59,11 @@ This repository is **UI only**. Run the API separately (e.g. sibling repo **myth
 
 ```text
 Browser
-  ├─ REST: dev → API origin | prod browser → /api/be → Next rewrites → API
+  ├─ REST: /api/be → Next Route Handler (BFF) → Nest (BACKEND_URL / NEXT_PUBLIC_* )
   └─ Socket.IO: direct to getSocketUrl() (same origin resolution as BACKEND_URL / NEXT_PUBLIC_* )
+
+Server (Next RSC, etc.)
+  └─ REST: direct to serverBackend() when apiConfig is used without window
 ```
 
 More detail: [`ARCHITECTURE.md`](ARCHITECTURE.md) (event page / `EventView` flow).

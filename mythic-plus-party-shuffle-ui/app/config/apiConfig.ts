@@ -1,6 +1,8 @@
 // REST base URL and Socket.IO origin.
 // next.config.js maps REACT_APP_API_URL into NEXT_PUBLIC_API_URL (CRA parity).
-// In production the browser uses same-origin /api/be (rewrites); Socket.IO uses getSocketUrl().
+// Browser (client): same-origin /api/be → BFF (app/api/be/[[...path]]/route.ts) → Nest (BACKEND_URL / NEXT_PUBLIC_*).
+// Server (RSC, etc.): direct backend origin via serverBackend().
+// Socket.IO: always getSocketUrl() (not proxied).
 
 function serverBackend(): string {
   return (
@@ -12,9 +14,6 @@ function serverBackend(): string {
 }
 
 function computeRestBase(): string {
-  if (process.env.NODE_ENV !== 'production') {
-    return serverBackend();
-  }
   if (typeof window === 'undefined') {
     return serverBackend();
   }
