@@ -14,26 +14,6 @@ import apiUrl from '@/config/apiConfig';
 import { cn } from '@/lib/utils';
 import { riftVoidFill80 } from '@/lib/riftUi';
 
-interface LoginResponse {
-  token?: string;
-  accessToken?: string;
-  user?: { id?: number; email?: string; username?: string };
-  message?: string;
-}
-
-function parseLoginBody(raw: unknown): LoginResponse | null {
-  if (raw == null) return null;
-  if (typeof raw === 'string') {
-    try {
-      return JSON.parse(raw) as LoginResponse;
-    } catch {
-      return null;
-    }
-  }
-  if (typeof raw === 'object') return raw as LoginResponse;
-  return null;
-}
-
 function messageFromAxiosError(err: unknown): string | null {
   if (!isAxiosError(err) || err.response?.data == null) return null;
   const d = err.response.data as Record<string, unknown>;
@@ -60,37 +40,17 @@ const LoginForm = () => {
     setIsSubmitting(true);
 
     axios
-      .post<LoginResponse>(
-        `${apiUrl}/auth/login`,
-        { email, password },
-        { withCredentials: true },
-      )
+      .post(`${apiUrl}/auth/login`, { email, password })
       .then((response) => {
         if (response.status !== 200) {
           setIsSubmitting(false);
           return;
         }
 
-        const data = parseLoginBody(response.data);
-        const token =
-          data?.token && typeof data.token === 'string'
-            ? data.token
-            : data?.accessToken && typeof data.accessToken === 'string'
-              ? data.accessToken
-              : null;
-
-        if (token) {
-          localStorage.setItem('authToken', token);
-        } else {
-          // Nest returns 401 on bad credentials; 200 means success. JWT may be httpOnly cookie only.
+        try {
           localStorage.removeItem('authToken');
-          if (process.env.NODE_ENV === 'development') {
-            // eslint-disable-next-line no-console
-            console.warn(
-              'Login 200 without token in JSON — using cookie session if DOMAIN is set on API.',
-              response.data,
-            );
-          }
+        } catch {
+          /* ignore */
         }
 
         if (rememberMe) {

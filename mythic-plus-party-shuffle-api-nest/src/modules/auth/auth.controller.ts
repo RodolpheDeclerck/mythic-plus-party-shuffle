@@ -42,7 +42,6 @@ export class AuthController {
     return {
       message: result.message,
       user: result.user,
-      token: result.token,
     };
   }
 
@@ -66,7 +65,6 @@ export class AuthController {
     return {
       message: result.message,
       user: result.user,
-      token: result.token,
     };
   }
 
@@ -88,7 +86,6 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   async logout(@Res({ passthrough: true }) res: Response) {
     const domain = this.configService.get('domain');
 

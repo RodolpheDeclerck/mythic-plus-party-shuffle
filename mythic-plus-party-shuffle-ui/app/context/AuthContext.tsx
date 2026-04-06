@@ -28,7 +28,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await axios.post<{ isAuthenticated: boolean }>(
         `${apiUrl}/auth/verify-token`,
         {},
-        { withCredentials: true },
       );
       setIsAuthenticated(response.data.isAuthenticated);
     } catch {
@@ -46,14 +45,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${apiUrl}/auth/logout`, {}, { withCredentials: true });
-      localStorage.removeItem('session');
+      await axios.post(`${apiUrl}/auth/logout`, {});
+    } catch {
+      /* still clear client state if network fails */
+    }
+    try {
       localStorage.removeItem('authToken');
-      setIsAuthenticated(false);
-      window.location.href = '/login';
     } catch {
       /* ignore */
     }
+    setIsAuthenticated(false);
+    window.location.href = '/login';
   };
 
   return (

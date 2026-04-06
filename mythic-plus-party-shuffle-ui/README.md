@@ -89,7 +89,7 @@ More detail: [`ARCHITECTURE.md`](ARCHITECTURE.md) (event page / `EventView` flow
 
 ## Security note
 
-Auth tokens are stored in **`localStorage`** for API calls (see axios setup). That matches many SPAs but is **XSS-sensitive**; httpOnly cookies issued by the API would be a hardening path. No credentials belong in this repo.
+Authenticated REST uses an **httpOnly** `session` cookie set by the API (not readable from JavaScript). The client sends it via **`axios.defaults.withCredentials`** (see [`app/lib/axiosAuth.ts`](app/lib/axiosAuth.ts)). The JWT is **not** returned in login/register JSON and is **not** stored in `localStorage` for API auth. XSS remains a general risk for the app; protect against script injection as usual. No credentials belong in this repo.
 
 ## Stack
 
