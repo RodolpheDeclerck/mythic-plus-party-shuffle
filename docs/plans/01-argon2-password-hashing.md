@@ -1,4 +1,6 @@
-# Renforcer le hashing des mots de passe (Argon2id)
+# 01 — Renforcer le hashing des mots de passe (Argon2id)
+
+**Fichier :** `docs/plans/01-argon2-password-hashing.md`
 
 ## État actuel (à corriger)
 

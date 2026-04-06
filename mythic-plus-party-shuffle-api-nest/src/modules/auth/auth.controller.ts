@@ -14,6 +14,8 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, VerifyTokenDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthRateLimit } from './auth-rate-limit.decorator';
+import { AuthRateLimitGuard } from './auth-rate-limit.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +25,8 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @AuthRateLimit('login')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.login(loginDto);
@@ -46,6 +50,8 @@ export class AuthController {
   }
 
   @Post('register')
+  @AuthRateLimit('register')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.register(registerDto);

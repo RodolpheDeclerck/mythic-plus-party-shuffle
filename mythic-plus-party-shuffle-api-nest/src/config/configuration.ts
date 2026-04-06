@@ -17,6 +17,18 @@ export default () => ({
     redis: {
       url: process.env.REDIS_URL || 'redis://localhost:6379',
     },
+
+    // Rate limiting (auth): per-IP fixed window via Redis
+    rateLimit: {
+      login: {
+        limit: parseInt(process.env.AUTH_LOGIN_RL_LIMIT || '10', 10),
+        windowSec: parseInt(process.env.AUTH_LOGIN_RL_WINDOW_SEC || '900', 10),
+      },
+      register: {
+        limit: parseInt(process.env.AUTH_REGISTER_RL_LIMIT || '5', 10),
+        windowSec: parseInt(process.env.AUTH_REGISTER_RL_WINDOW_SEC || '3600', 10),
+      },
+    },
     
     // Configuration JWT
     jwt: {

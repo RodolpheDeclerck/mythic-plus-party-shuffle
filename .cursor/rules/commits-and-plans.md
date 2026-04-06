@@ -9,12 +9,12 @@ alwaysApply: true
 
 Quand une tâche a été menée à partir d’un **plan** généré dans Cursor (fichier sous `.cursor/plans/` ou équivalent) :
 
-1. **Versionner le plan dans le dépôt par défaut** : copier le contenu utile du plan (sans le frontmatter YAML Cursor `--- … ---` si présent) dans [`docs/plans/`](../../docs/plans/) sous un nom stable (`kebab-case.md`), **dans le même commit** que le code — sauf si l’utilisateur dit explicitement de ne pas le faire.
+1. **Versionner le plan dans le dépôt par défaut** : copier le contenu utile du plan (sans le frontmatter YAML Cursor `--- … ---` si présent) dans [`docs/plans/`](../../docs/plans/) sous un nom stable **`NN-kebab-case.md`** (numéro séquentiel sur 2 chiffres + tirets ; voir [`docs/plans/README.md`](../../docs/plans/README.md)), **dans le même commit** que le code — sauf si l’utilisateur dit explicitement de ne pas le faire.
 
 2. **Inclure dans le corps du message de commit** (après une ligne vide sous le sujet `type(scope): …`) :
    - une ligne **`Plan:`** avec le **titre** ou le **nom du fichier** du plan ;
    - **2 à 5 puces** reprenant le périmètre ou les décisions principales du diff ;
-   - une puce ou ligne avec le **chemin** du fichier sous `docs/plans/` (ex. `docs/plans/argon2-password-hashing.md`).
+   - une puce ou ligne avec le **chemin** du fichier sous `docs/plans/` (ex. `docs/plans/02-auth-rate-limiting.md`).
 
 3. Si le plan n’a **pas** été copié dans le dépôt (exception demandée par l’utilisateur), garder quand même **`Plan:`** + puces ; ne pas inventer de chemin.
 
@@ -23,7 +23,7 @@ Quand une tâche a été menée à partir d’un **plan** généré dans Cursor 
 ```text
 feat(ui): session via cookie httpOnly sans JWT en JSON
 
-Plan: auth_cookie-only session (docs/plans/auth-cookie-session.md)
+Plan: auth_cookie-only session (docs/plans/03-auth-cookie-session.md)
 - Nest: plus de token dans le body login/register; logout sans JwtAuthGuard.
 - UI: axios.defaults.withCredentials; suppression authToken / intercepteur Bearer.
 - README: note sécurité mise à jour.

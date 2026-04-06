@@ -9,14 +9,14 @@ Après le sujet au format Conventional Commits (`feat(ui): …`), **laisser une 
 1. Une ligne **`Plan:`** avec le **titre** du plan ou le **nom du fichier** (ex. `Plan: auth_cookie-only session`).
 2. **Quelques puces** (2 à 5) qui résument le périmètre réel du diff : fichiers / comportements touchés, pas tout le roman du plan.
 
-**Par défaut**, une copie du plan doit être **versionnée** dans ce dépôt sous `docs/plans/<nom>.md` (même commit que l’implémentation), et le **chemin** doit apparaître dans le corps du commit (souvent sur la ligne `Plan:` ou en puce). Exception seulement si l’utilisateur demande explicitement de ne pas versionner le plan.
+**Par défaut**, une copie du plan doit être **versionnée** dans ce dépôt sous `docs/plans/NN-kebab-case.md` (numéro séquentiel + titre ; index : [docs/plans/README.md](plans/README.md)), **même commit** que l’implémentation, et le **chemin** doit apparaître dans le corps du commit (souvent sur la ligne `Plan:` ou en puce). Exception seulement si l’utilisateur demande explicitement de ne pas versionner le plan.
 
 ## Exemple
 
 ```text
 feat(ui): session via cookie httpOnly sans JWT en JSON
 
-Plan: auth_cookie-only session (docs/plans/auth-cookie-session.md)
+Plan: auth_cookie-only session (docs/plans/03-auth-cookie-session.md)
 - Nest: plus de token dans le body login/register; logout sans JwtAuthGuard.
 - UI: axios.defaults.withCredentials; suppression authToken / intercepteur Bearer.
 - README: note sécurité mise à jour.

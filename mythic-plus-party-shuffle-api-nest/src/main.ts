@@ -12,7 +12,12 @@ async function bootstrap() {
   app.useWebSocketAdapter(new SocketIOAdapter(app));
   
   const configService = app.get(ConfigService);
-  
+
+  const nodeEnv = configService.get<string>('nodeEnv');
+  if (nodeEnv === 'production') {
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  }
+
   app.use(cookieParser());
   
   app.useGlobalPipes(

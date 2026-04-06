@@ -30,6 +30,19 @@
 
 New accounts store **Argon2id** hashes (memory cost ~19 MiB, time cost 3, parallelism 4). Existing rows that still use the legacy 64-character hex HMAC format are verified on login and **re-hashed to Argon2** automatically. The `salt` column is left empty for Argon2 rows (the encoded hash embeds its own salt).
 
+## Security (rate limiting)
+
+`POST /auth/login` and `POST /auth/register` are limited **per client IP** using Redis fixed windows (`INCR` + `EXPIRE`). Over the limit returns **429** with a **`Retry-After`** header (seconds).
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `AUTH_LOGIN_RL_LIMIT` | `10` | Max login attempts per window |
+| `AUTH_LOGIN_RL_WINDOW_SEC` | `900` | Login window (15 minutes) |
+| `AUTH_REGISTER_RL_LIMIT` | `5` | Max registrations per window |
+| `AUTH_REGISTER_RL_WINDOW_SEC` | `3600` | Register window (1 hour) |
+
+In **production**, the app sets Express **`trust proxy`** to `1` so `X-Forwarded-For` is honored behind Render (or similar). Local dev without a reverse proxy does not enable it.
+
 ## Project setup
 
 ```bash
