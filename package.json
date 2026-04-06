@@ -1,0 +1,25 @@
+{
+  "name": "mythic-plus-party-shuffle-workspace",
+  "private": true,
+  "description": "Monorepo: Next.js UI + Nest API",
+  "workspaces": [
+    "mythic-plus-party-shuffle-ui",
+    "mythic-plus-party-shuffle-api-nest"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w mythic-plus-party-shuffle",
+    "build:web": "npm run build -w mythic-plus-party-shuffle",
+    "lint:web": "npm run lint -w mythic-plus-party-shuffle",
+    "test:web": "npm run test:ci -w mythic-plus-party-shuffle",
+    "dev:api": "npm run start:dev -w mythic-plus-party-shuffle-api-nest",
+    "build:api": "npm run build -w mythic-plus-party-shuffle-api-nest",
+    "lint:api": "npm run lint -w mythic-plus-party-shuffle-api-nest",
+    "test:api": "npm run test -w mythic-plus-party-shuffle-api-nest",
+    "ci:web": "npm run lint:web && npm run test:web && npm run build:web",
+    "ci:api": "npm run lint:api && npm run test:api && npm run build:api",
+    "ci": "npm run ci:web && npm run ci:api"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

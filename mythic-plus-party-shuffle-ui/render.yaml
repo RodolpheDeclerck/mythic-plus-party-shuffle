@@ -1,0 +1,13 @@
+# Next.js must run as a Web Service (Node), not a Static Site.
+# Static Site "Publish directory: build" fails because Next outputs .next/, not build/.
+services:
+  - type: web
+    name: mythic-plus-party-shuffle-ui
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    # NEXT_PUBLIC_* is inlined at build time (set before `next build`).
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://api.mythic-plus-party-shuffle.ca
