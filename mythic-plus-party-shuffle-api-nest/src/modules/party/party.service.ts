@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
@@ -10,6 +10,7 @@ import { Redis } from 'ioredis'; // ou le type approprié selon votre package Re
 @Injectable()
 export class PartyService {
   private shuffleHistoryKey = 'partyShuffleHistory';
+  private readonly logger = new Logger(PartyService.name);
 
   constructor(
     @InjectRepository(Character)
@@ -111,15 +112,15 @@ export class PartyService {
 
     this.createGroupForRemainingDPS(unusedDps, parties);
 
-    console.log('Optimisation de la distribution globale des groupes...');
+    this.logger.debug('Optimizing global party distribution');
     this.optimizeGlobalDistribution(parties, partiesHistory);
-    console.log('Optimisation terminée');
+    this.logger.debug('Global party distribution optimization done');
 
     const allAssignedPlayers = new Set(parties.flatMap(p => p.members.map(m => m.id)));
     const unassignedPlayers = characters.filter(c => !allAssignedPlayers.has(c.id));
     
     if (unassignedPlayers.length > 0) {
-      console.log(`Répartition des ${unassignedPlayers.length} joueurs non assignés...`);
+      this.logger.debug(`Distributing ${unassignedPlayers.length} unassigned players`);
       this.distributeUnassignedPlayers(unassignedPlayers, parties);
     }
 
@@ -153,11 +154,12 @@ export class PartyService {
 
   async saveGroupsToRedis(parties: Party[], eventCode: string): Promise<void> {
     try {
-      console.log('Données à sauvegarder dans Redis:', JSON.stringify(parties));
+      this.logger.debug(`Redis save party:${eventCode} (${parties.length} parties)`);
       await this.redisClient.set('party:' + eventCode, JSON.stringify(parties));
-      console.log('Écriture dans Redis réussie pour party:' + eventCode);
+      this.logger.debug(`Redis write OK party:${eventCode}`);
     } catch (error) {
-      console.error('Erreur lors de l\'écriture des groupes dans Redis:', error);
+      const e = error as Error;
+      this.logger.error(`Redis write failed for party:${eventCode}: ${e.message}`, e.stack);
     }
   }
 
@@ -246,7 +248,7 @@ export class PartyService {
           if (brToAdd) {
             party.members.push(brToAdd);
             usedCharacters.add(brToAdd.id);
-            console.log(`Added ${brToAdd.name} as Battle Rez to the party: ${party.id}`);
+            this.logger.debug(`Added BR ${brToAdd.name} to party ${party.id}`);
           } else {
             roles = roles.filter(role => role !== randomRole);
           }
@@ -295,7 +297,7 @@ export class PartyService {
           if (blToAdd) {
             party.members.push(blToAdd);
             usedCharacters.add(blToAdd.id);
-            console.log(`Added ${blToAdd.name} as Blood Lust to the party: ${party.id}`);
+            this.logger.debug(`Added BL ${blToAdd.name} to party ${party.id}`);
           } else {
             roles = roles.filter(role => role !== randomRole);
           }
@@ -333,7 +335,7 @@ export class PartyService {
         if (meleeToAdd && !usedCharacters.has(meleeToAdd.id)) {
           party.members.push(meleeToAdd);
           usedCharacters.add(meleeToAdd.id);
-          console.log(`Added ${meleeToAdd.name} as CAC to the party: ${party.id}`);
+          this.logger.debug(`Added CAC ${meleeToAdd.name} to party ${party.id}`);
         }
       }
 
@@ -356,7 +358,7 @@ export class PartyService {
         if (distToAdd && !usedCharacters.has(distToAdd.id)) {
           party.members.push(distToAdd);
           usedCharacters.add(distToAdd.id);
-          console.log(`Added ${distToAdd.name} as DIST to the party: ${party.id}`);
+          this.logger.debug(`Added DIST ${distToAdd.name} to party ${party.id}`);
         }
       }
     });
@@ -385,7 +387,7 @@ export class PartyService {
         if (dpsToAdd) {
           party.members.push(dpsToAdd);
           unusedDps = unusedDps.filter(dps => dps.id !== dpsToAdd.id);
-          console.log(`Added ${dpsToAdd.name} as remaining DPS to the party: ${party.id}`);
+          this.logger.debug(`Added DPS ${dpsToAdd.name} to party ${party.id}`);
         } else {
           break;
         }
@@ -413,7 +415,7 @@ export class PartyService {
         parties.push(currentParty);
       }
       currentParty.members.push(dps);
-      console.log(`Added ${dps.name} as remaining DPS to the party: ${currentParty.id}`);
+      this.logger.debug(`Added DPS ${dps.name} to party ${currentParty.id}`);
     }
   }
 
@@ -481,9 +483,13 @@ export class PartyService {
       const keyRange = keyMax - keyMin;
 
       if (keyRange > 4) {
-        console.log(`⚠️ Groupe ${index + 1} : Large écart de keystones (${keyMin}-${keyMax})`);
-        party.members.forEach(member => {
-          console.log(`  - ${member.name}: ${member.keystoneMinLevel}-${member.keystoneMaxLevel}`);
+        this.logger.warn(
+          `Party ${index + 1}: large keystone spread ${keyMin}-${keyMax}`,
+        );
+        party.members.forEach((member) => {
+          this.logger.debug(
+            `  ${member.name}: ${member.keystoneMinLevel}-${member.keystoneMaxLevel}`,
+          );
         });
       }
     });

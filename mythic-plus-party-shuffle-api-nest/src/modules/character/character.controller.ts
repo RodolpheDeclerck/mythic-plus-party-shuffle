@@ -12,6 +12,7 @@ import {
     HttpException,
     UsePipes,
     ValidationPipe,
+    Logger,
     Req,
     PipeTransform,
     ArgumentMetadata,
@@ -31,6 +32,8 @@ class NoValidationPipe implements PipeTransform {
   
   @Controller('api/characters')
   export class CharacterController {
+    private readonly logger = new Logger(CharacterController.name);
+
     constructor(
       private characterService: CharacterService,
       private webSocketService: WebSocketService,
@@ -70,8 +73,8 @@ class NoValidationPipe implements PipeTransform {
     @Put('upsert') // ✅ PUT comme Express - DOIT être avant @Put(':id')
     @UsePipes(new NoValidationPipe()) // Désactiver la validation globale pour cette route
     async upsertCharacter(@Body() body: any, @Req() req: any) {
-      console.log('📥 [upsertCharacter] Raw request body:', JSON.stringify(req.body, null, 2));
-      
+      this.logger.debug(`[upsertCharacter] body: ${JSON.stringify(req.body)}`);
+
       // Transformation manuelle pour s'assurer que les types sont corrects
       const upsertCharacterDto: UpsertCharacterDto = {
         id: body.id !== undefined && body.id !== null ? Number(body.id) : undefined,

@@ -47,6 +47,8 @@ In **production**, the app sets Express **`trust proxy`** to `1` so `X-Forwarded
 
 JWT authentication paths do **not** log cookies, `Authorization` headers, or full JWT payloads. `JwtAuthGuard` logs a single **`warn`** on failure (reason + HTTP method + path only). `JwtStrategy` logs **`warn`** on invalid payload or missing user (numeric user id only when relevant); optional **`debug`** on successful validation exists only when `NODE_ENV=development`.
 
+Elsewhere, **`console.*` is avoided** in `src/`: bootstrap, party/character/event controllers and services, and WebSocket code use Nest **`Logger`**. Verbose payloads (request bodies, full event JSON) are logged at **`debug`** so they stay off default production log levels.
+
 ## Project setup
 
 ```bash

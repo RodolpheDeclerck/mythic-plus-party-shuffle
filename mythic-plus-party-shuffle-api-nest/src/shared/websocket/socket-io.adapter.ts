@@ -1,6 +1,9 @@
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { ServerOptions } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
+
+const socketIoAdapterLogger = new Logger('SocketIOAdapter');
 
 export class SocketIOAdapter extends IoAdapter {
   private readonly configService: ConfigService;
@@ -46,14 +49,13 @@ export class SocketIOAdapter extends IoAdapter {
       destroyUpgradeTimeout: 1000, // 1 seconde pour détruire les upgrades échoués
     };
 
-    console.log('🔌 Socket.IO Adapter creating server...');
-    console.log('   Port:', port);
-    console.log('   CORS Origin:', corsOrigin);
-    console.log('   Transports:', serverOptions.transports);
-    
+    socketIoAdapterLogger.log(
+      `Creating Socket.IO server port=${port} cors=${corsOrigin} transports=${String(serverOptions.transports)}`,
+    );
+
     const server = super.createIOServer(port, serverOptions);
-    
-    console.log('✅ Socket.IO server created successfully');
+
+    socketIoAdapterLogger.log('Socket.IO server created');
     
     return server;
   }

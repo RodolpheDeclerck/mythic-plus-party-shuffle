@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   // CORS est configuré dynamiquement via SocketIOAdapter dans main.ts
@@ -15,7 +16,8 @@ import { ConfigService } from '@nestjs/config';
   transports: ['polling', 'websocket'],
 })
 export class AppWebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  //                                                                  ↑ Ajouter OnGatewayInit ici
+  private readonly logger = new Logger(AppWebSocketGateway.name);
+
   @WebSocketServer()
   server: Server;
 
@@ -29,11 +31,9 @@ export class AppWebSocketGateway implements OnGatewayInit, OnGatewayConnection, 
     // Note: Socket.IO vérifie CORS lors de la poignée de main initiale, donc la valeur
     // dans le décorateur doit correspondre à celle utilisée par le serveur HTTP
     if (decoratorCorsOrigin !== corsOrigin) {
-      console.warn('⚠️  WARNING: CORS origin mismatch detected!');
-      console.warn(`   Decorator CORS origin: ${decoratorCorsOrigin}`);
-      console.warn(`   HTTP Server CORS origin: ${corsOrigin}`);
-      console.warn('   This may cause WebSocket connection failures.');
-      console.warn('   Ensure CORS_ORIGIN environment variable matches your configuration.');
+      this.logger.warn(
+        `CORS origin mismatch: decorator=${decoratorCorsOrigin} server=${corsOrigin}; check CORS_ORIGIN`,
+      );
     }
     
     // Écouter les erreurs de connexion (mais ignorer les erreurs de déconnexion rapide)
@@ -43,16 +43,13 @@ export class AppWebSocketGateway implements OnGatewayInit, OnGatewayConnection, 
         // C'est une déconnexion rapide normale, ne pas logger comme erreur
         return;
       }
-      console.error('❌ Socket.IO connection error:', err.message);
-      console.error('   Details:', err.context);
-      console.error('   Request origin:', err.req?.headers?.origin);
+      this.logger.error(
+        `Socket.IO connection error: ${err.message} origin=${err.req?.headers?.origin ?? 'n/a'}`,
+      );
     });
     
     // Écouter les tentatives de connexion WebSocket (pour debug uniquement)
-    server.engine.on('upgrade', (req, socket, head) => {
-      // Log silencieux - seulement pour debug si nécessaire
-      // console.log('🔄 WebSocket upgrade attempt from:', req.headers.origin);
-    });
+    server.engine.on('upgrade', () => {});
     
     // Écouter les erreurs de transport WebSocket (mais ignorer les déconnexions rapides)
     server.engine.on('upgrade_error', (err) => {
@@ -60,27 +57,24 @@ export class AppWebSocketGateway implements OnGatewayInit, OnGatewayConnection, 
       if (err.message && err.message.includes('closed before')) {
         return;
       }
-      console.warn('⚠️  WebSocket upgrade error (client will fallback to polling):', err.message);
+      this.logger.warn(`WebSocket upgrade error (fallback to polling): ${err.message}`);
     });
-    
-    console.log('✅ WebSocket Gateway initialized');
-    console.log('   CORS Origin (from config):', corsOrigin);
-    console.log('   CORS Origin (from decorator):', decoratorCorsOrigin);
-    console.log('   Server ready');
+
+    this.logger.log(
+      `WebSocket gateway ready; CORS config=${corsOrigin} decoratorEnv=${decoratorCorsOrigin}`,
+    );
   }
 
   handleConnection(client: Socket) {
     const corsOrigin = this.configService.get<string>('cors.origin') || 'http://localhost:3000';
     const clientOrigin = client.handshake.headers.origin;
     
-    console.log('✅ New WebSocket client connected:', client.id);
-    console.log('   Client Origin:', clientOrigin);
-    console.log('   Expected CORS Origin:', corsOrigin);
-    console.log('   Transport:', client.conn.transport.name);
-    
+    this.logger.log(
+      `WebSocket client connected id=${client.id} transport=${client.conn.transport.name} origin=${clientOrigin ?? 'n/a'}`,
+    );
+
     if (clientOrigin && clientOrigin !== corsOrigin) {
-      console.warn('⚠️  Warning: Client origin does not match configured CORS origin');
-      console.warn('   This may cause connection issues. Verify CORS configuration.');
+      this.logger.warn(`Client origin ${clientOrigin} does not match CORS ${corsOrigin}`);
     }
     
     // Envoyer un message de bienvenue pour maintenir la connexion active
@@ -96,45 +90,37 @@ export class AppWebSocketGateway implements OnGatewayInit, OnGatewayConnection, 
     
     // Ne logger que les déconnexions inattendues (pas les déconnexions rapides normales)
     if (readyState === 'open' || transport === 'websocket') {
-      console.log('🔌 WebSocket client disconnected:', client.id);
-      console.log('   Reason:', disconnectReason);
-      console.log('   Transport was:', transport);
+      this.logger.debug(
+        `WebSocket client disconnected id=${client.id} reason=${disconnectReason} transport=${transport}`,
+      );
     }
     // Les déconnexions rapides (CONNECTING state) sont silencieuses - c'est normal avec React Strict Mode
   }
 
   emitEventUpdated(event?: any) {
     if (event) {
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('📢 [WebSocket] Emitting: event-updated');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('📦 [WebSocket] Full event data:');
-      console.log(JSON.stringify(event, null, 2));
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('👁️  [WebSocket] arePartiesVisible:', event.arePartiesVisible);
-      console.log('👁️  [WebSocket] visible:', event.visible);
-      console.log('👁️  [WebSocket] visible type:', typeof event.visible);
-      console.log('👁️  [WebSocket] visible === true?', event.visible === true);
-      console.log('👁️  [WebSocket] visible === false?', event.visible === false);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      this.logger.debug(
+        `WebSocket emit event-updated code=${event.code ?? 'n/a'} visible=${event.visible} arePartiesVisible=${event.arePartiesVisible}`,
+      );
+      this.logger.debug(`WebSocket event-updated payload: ${JSON.stringify(event)}`);
     } else {
-      console.log('📢 [WebSocket] Emitted: event-updated (no event data)');
+      this.logger.debug('WebSocket emit event-updated (no payload)');
     }
     this.server.emit('event-updated', event);
   }
 
   emitPartiesUpdated(parties?: any) {
     if (parties) {
-      console.log(`📢 Emitted: parties-updated with ${parties.length} parties`);
-      console.log('📦 First party sample:', JSON.stringify(parties[0], null, 2));
+      this.logger.log(`WebSocket emit parties-updated count=${parties.length}`);
+      this.logger.debug(`WebSocket parties-updated sample: ${JSON.stringify(parties[0])}`);
     } else {
-      console.log('📢 Emitted: parties-updated (no parties data)');
+      this.logger.debug('WebSocket emit parties-updated (no payload)');
     }
     this.server.emit('parties-updated', parties);
   }
 
   emitCharacterUpdated() {
     this.server.emit('character-updated');
-    console.log('📢 Emitted: character-updated');
+    this.logger.debug('WebSocket emit character-updated');
   }
 }

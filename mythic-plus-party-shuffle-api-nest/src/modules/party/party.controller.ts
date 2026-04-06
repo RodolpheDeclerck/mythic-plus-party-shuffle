@@ -10,6 +10,7 @@ import {
   UsePipes,
   ValidationPipe,
   HttpException,
+  Logger,
 } from '@nestjs/common';
 import { PartyService } from './party.service';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
@@ -17,6 +18,8 @@ import { CreateOrUpdatePartiesDto } from './dto';
 
 @Controller('api/events/:eventCode/parties') // Note: route différente dans Express
 export class PartyController {
+  private readonly logger = new Logger(PartyController.name);
+
   constructor(
     private partyService: PartyService,
     private webSocketService: WebSocketService,
@@ -41,8 +44,8 @@ export class PartyController {
     @Param('eventCode') eventCode: string,
     @Body() body: any, // Accepter any pour plus de flexibilité
   ) {
-    console.log('📥 [createOrUpdateParties] Received raw body:', JSON.stringify(body, null, 2));
-    
+    this.logger.debug(`[createOrUpdateParties] raw body: ${JSON.stringify(body)}`);
+
     try {
       // Normaliser les données reçues
       let parties: any[];
@@ -77,7 +80,9 @@ export class PartyController {
             // Si c'est un nombre, on ne peut pas le transformer en Character complet
             // Il faudrait récupérer le Character depuis la DB, mais pour l'instant on accepte juste l'ID
             if (typeof member === 'number') {
-              console.warn(`⚠️ Member at party ${partyIndex}, member ${memberIndex} is just a number (${member}). Character details will be missing.`);
+              this.logger.warn(
+                `Member at party ${partyIndex}, member ${memberIndex} is numeric id only; character details will be missing`,
+              );
               return { id: member };
             }
             // Si c'est un objet Character complet, le garder tel quel
@@ -96,8 +101,8 @@ export class PartyController {
         };
       });
       
-      console.log('🔄 [createOrUpdateParties] Transformed parties:', JSON.stringify(transformedParties, null, 2));
-      
+      this.logger.debug(`[createOrUpdateParties] transformed parties: ${JSON.stringify(transformedParties)}`);
+
       await this.partyService.createOrUpdatePartiesToRedis(
         transformedParties as any,
         eventCode,
@@ -107,11 +112,13 @@ export class PartyController {
       const partiesFromRedis = await this.partyService.getPartiesByEventCode(eventCode);
       this.webSocketService.emitPartiesUpdated(partiesFromRedis);
       
-      console.log('✅ [createOrUpdateParties] Successfully updated parties');
+      this.logger.log(`[createOrUpdateParties] updated parties for event ${eventCode}`);
       return { message: 'Parties created or updated successfully' };
     } catch (error: any) {
-      console.error('❌ [createOrUpdateParties] Error:', error);
-      console.error('❌ [createOrUpdateParties] Error stack:', error.stack);
+      this.logger.error(
+        `[createOrUpdateParties] ${error?.message ?? error}`,
+        error?.stack,
+      );
       
       // Si c'est déjà une HttpException, la relancer telle quelle
       if (error instanceof HttpException) {

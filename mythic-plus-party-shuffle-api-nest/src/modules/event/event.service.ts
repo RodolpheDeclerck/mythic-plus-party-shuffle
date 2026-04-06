@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppEvent } from '../../shared/entities/event.entity';
@@ -8,6 +8,8 @@ import { CreateEventDto, UpdateEventDto } from './dto';
 
 @Injectable()
 export class EventService {
+  private readonly logger = new Logger(EventService.name);
+
   constructor(
     @InjectRepository(AppEvent)
     private eventRepository: Repository<AppEvent>,
@@ -89,21 +91,24 @@ export class EventService {
   }
 
   async setPartiesVisibility(eventCode: string, visible: boolean): Promise<AppEvent> {
-    console.log(`🔄 [EventService] Updating parties visibility for event ${eventCode} to ${visible}`);
-    
-    // Vérifier la valeur avant la mise à jour
+    this.logger.debug(
+      `[setPartiesVisibility] ${eventCode} -> arePartiesVisible=${visible}`,
+    );
+
     const eventBefore = await this.eventRepository.findOne({
       where: { code: eventCode },
       select: ['id', 'code', 'arePartiesVisible'],
     });
-    console.log(`📊 [EventService] Before update - arePartiesVisible:`, eventBefore?.arePartiesVisible);
-    
-    const updateResult = await this.eventRepository.update(
-      { code: eventCode }, 
-      { arePartiesVisible: visible }
+    this.logger.debug(
+      `[setPartiesVisibility] before arePartiesVisible=${eventBefore?.arePartiesVisible}`,
     );
-    
-    console.log(`📊 [EventService] Update result:`, { affected: updateResult.affected });
+
+    const updateResult = await this.eventRepository.update(
+      { code: eventCode },
+      { arePartiesVisible: visible },
+    );
+
+    this.logger.debug(`[setPartiesVisibility] update affected=${updateResult.affected}`);
 
     // Récupérer l'événement avec toutes les colonnes explicitement
     const updatedEvent = await this.eventRepository
@@ -112,16 +117,13 @@ export class EventService {
       .getOne();
 
     if (!updatedEvent) {
-      console.error(`❌ [EventService] Event not found after update: ${eventCode}`);
+      this.logger.warn(`[setPartiesVisibility] event not found after update: ${eventCode}`);
       throw new NotFoundException('Event not found');
     }
 
-    console.log(`✅ [EventService] Event found after update:`, {
-      id: updatedEvent.id,
-      code: updatedEvent.code,
-      arePartiesVisible: updatedEvent.arePartiesVisible,
-      type: typeof updatedEvent.arePartiesVisible,
-    });
+    this.logger.debug(
+      `[setPartiesVisibility] loaded id=${updatedEvent.id} arePartiesVisible=${updatedEvent.arePartiesVisible}`,
+    );
 
     return updatedEvent;
   }

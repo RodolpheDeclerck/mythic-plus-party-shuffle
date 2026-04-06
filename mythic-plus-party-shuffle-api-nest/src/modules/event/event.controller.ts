@@ -14,6 +14,7 @@ import {
   UseGuards,
   Req,
   HttpException,
+  Logger,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto, UpdateEventDto, SetPartiesVisibilityDto } from './dto';
@@ -26,6 +27,8 @@ import { AppEvent } from '../../shared/entities/event.entity';
 
 @Controller('api/events')
 export class EventController {
+  private readonly logger = new Logger(EventController.name);
+
   constructor(
     private eventService: EventService,
     private partyFacade: PartyFacade,
@@ -75,7 +78,7 @@ export class EventController {
     
     // Log pour vérifier que visible est bien présent
     if (!response.hasOwnProperty('visible')) {
-      console.error('❌ [mapEventToResponse] ERROR: visible property is missing!');
+      this.logger.warn('[mapEventToResponse] visible property missing after map');
     }
     
     return response;
@@ -98,16 +101,15 @@ export class EventController {
   async getAllEvents(@Query('code') code?: string) {
     // Si un code est fourni, retourner un seul événement (compatibilité avec l'ancien frontend)
     if (code) {
-      console.log(`📥 [GET] getAllEvents with code query: ${code}`);
+      this.logger.debug(`[GET] getAllEvents code=${code}`);
       const event = await this.eventService.getEventByCode(code);
       if (!event) {
         throw new Error('Event not found');
       }
       const response = this.mapEventToResponse(event);
-      console.log(`📤 [GET] getAllEvents response for code ${code}:`, {
-        arePartiesVisible: response.arePartiesVisible,
-        visible: response.visible,
-      });
+      this.logger.debug(
+        `[GET] getAllEvents code=${code} arePartiesVisible=${response.arePartiesVisible} visible=${response.visible}`,
+      );
       return response;
     }
     // Sinon, retourner tous les événements
@@ -149,16 +151,15 @@ export class EventController {
   // ✅ Publique
   @Get(':eventCode')
   async getEventByCode(@Param('eventCode') eventCode: string) {
-    console.log(`📥 [GET] getEventByCode called for: ${eventCode}`);
+    this.logger.debug(`[GET] getEventByCode ${eventCode}`);
     const event = await this.eventService.getEventByCode(eventCode);
     if (!event) {
       throw new Error('Event not found');
     }
     const response = this.mapEventToResponse(event);
-    console.log(`📤 [GET] getEventByCode response for ${eventCode}:`, {
-      arePartiesVisible: response.arePartiesVisible,
-      visible: response.visible,
-    });
+    this.logger.debug(
+      `[GET] getEventByCode ${eventCode} arePartiesVisible=${response.arePartiesVisible} visible=${response.visible}`,
+    );
     return response;
   }
 
@@ -197,9 +198,9 @@ export class EventController {
   // ✅ Publique (PAS de guards - comme dans Express)
   @Get(':eventCode/shuffle-parties')
   async shuffleParties(@Param('eventCode') eventCode: string) {
-    console.log(`🔄 Shuffling parties for event: ${eventCode}`);
+    this.logger.log(`Shuffle parties for event ${eventCode}`);
     const shuffledParties = await this.partyFacade.shuffleAndSaveGroups(eventCode);
-    console.log(`✅ Shuffle completed, ${shuffledParties.length} parties created`);
+    this.logger.log(`Shuffle completed for ${eventCode}: ${shuffledParties.length} parties`);
     this.webSocketService.emitPartiesUpdated(shuffledParties);
     return shuffledParties;
   }
@@ -209,26 +210,22 @@ export class EventController {
     @Param('eventCode') eventCode: string,
     @Body() setPartiesVisibilityDto: SetPartiesVisibilityDto,
   ) {
-    console.log('🚀 [setPartiesVisibility] Called with:', {
-      eventCode,
-      visible: setPartiesVisibilityDto.visible,
-      visibleType: typeof setPartiesVisibilityDto.visible,
-    });
-    
+    this.logger.debug(
+      `[setPartiesVisibility] ${eventCode} visible=${setPartiesVisibilityDto.visible} (${typeof setPartiesVisibilityDto.visible})`,
+    );
+
     const updatedEvent = await this.eventService.setPartiesVisibility(
       eventCode,
       setPartiesVisibilityDto.visible,
     );
     
     const response = this.mapEventToResponse(updatedEvent);
-    console.log('📤 [setPartiesVisibility] HTTP Response sent:', JSON.stringify(response, null, 2));
-    console.log('📤 [setPartiesVisibility] arePartiesVisible:', response.arePartiesVisible, '(type:', typeof response.arePartiesVisible + ')');
-    console.log('📤 [setPartiesVisibility] visible:', response.visible, '(type:', typeof response.visible + ')');
-    
-    // ✅ Envoyer l'événement mis à jour via WebSocket avec la bonne valeur
-    console.log('📡 [setPartiesVisibility] Sending via WebSocket...');
+    this.logger.debug(
+      `[setPartiesVisibility] response visible=${response.visible} arePartiesVisible=${response.arePartiesVisible}`,
+    );
+
     this.webSocketService.emitEventUpdated(response);
-    console.log('✅ [setPartiesVisibility] WebSocket message sent');
+    this.logger.debug(`[setPartiesVisibility] emitted event-updated for ${eventCode}`);
     
     return response;
   }

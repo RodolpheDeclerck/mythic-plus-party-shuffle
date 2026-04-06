@@ -2,10 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
-import { ValidationPipe, HttpException, HttpStatus } from '@nestjs/common';
+import { ValidationPipe, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { SocketIOAdapter } from './shared/websocket/socket-io.adapter';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
   
   // Configurer l'adapter Socket.IO personnalisé pour gérer CORS dynamiquement
@@ -52,12 +53,12 @@ async function bootstrap() {
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
-  console.log('CORS configured for origin:', corsOrigin);
-  
+  logger.log(`CORS configured for origin: ${corsOrigin}`);
+
   const port = configService.get<number>('port') || 8080;
-  
+
   await app.listen(port);
-  console.log(`Server is running at http://localhost:${port}`);
-  console.log(`WebSocket server is ready on ws://localhost:${port}`);
+  logger.log(`Server is running at http://localhost:${port}`);
+  logger.log(`WebSocket server is ready on ws://localhost:${port}`);
 }
 bootstrap();
