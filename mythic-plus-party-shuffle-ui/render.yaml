@@ -1,4 +1,2 @@
-# Use the blueprint at the repository root: ../render.yaml (from this folder).
-# (this file is kept as a pointer; rootDir must be repo root for npm ci + workspaces.)
-#
-# Next.js must run as a Web Service (Node), not a Static Site.
+# Prefer the blueprint at the repository root: ../render.yaml
+# (build/start use entry scripts so monorepo root + npm ci work from any Root Directory.)

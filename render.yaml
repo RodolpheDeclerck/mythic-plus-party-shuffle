@@ -1,13 +1,12 @@
-# Monorepo: install from root lockfile, build only the Next.js workspace.
-# In the Render dashboard, leave "Root Directory" empty (repository root).
+# Works with Root Directory = empty (repo root) OR = mythic-plus-party-shuffle-ui (see entry scripts).
 # See mythic-plus-party-shuffle-ui/README.md → Deploy / Render.
 services:
   - type: web
     name: mythic-plus-party-shuffle-ui
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build -w mythic-plus-party-shuffle
-    startCommand: npm run start -w mythic-plus-party-shuffle
+    buildCommand: if [ -f mythic-plus-party-shuffle-ui/render-build-entry.sh ]; then bash mythic-plus-party-shuffle-ui/render-build-entry.sh; else bash render-build-entry.sh; fi
+    startCommand: if [ -f mythic-plus-party-shuffle-ui/render-start-entry.sh ]; then bash mythic-plus-party-shuffle-ui/render-start-entry.sh; else bash render-start-entry.sh; fi
     envVars:
       - key: NODE_VERSION
         value: "20.19.0"

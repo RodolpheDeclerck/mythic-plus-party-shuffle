@@ -47,13 +47,20 @@ Used in [`app/config/apiConfig.ts`](app/config/apiConfig.ts), [`next.config.js`]
 
 This repo is an **npm workspace**: the lockfile that matters is [`package-lock.json`](../package-lock.json) at the **repository root**. The file `mythic-plus-party-shuffle-ui/package-lock.json` is **gitignored** and is **not** deployed.
 
-1. In Render, set **Root Directory** to **empty** (use the repo root), not `mythic-plus-party-shuffle-ui`.
-2. **Build command:** `npm ci && npm run build -w mythic-plus-party-shuffle`
-3. **Start command:** `npm run start -w mythic-plus-party-shuffle`
-4. Use the blueprint [`render.yaml`](../render.yaml) at the **repo root** (or paste the same commands in the dashboard).
-5. Set **Node 20** (e.g. env `NODE_VERSION=20.18.0` or match your `engines` field).
+**Recommended:** Root Directory **empty** (repo root). Use [`render.yaml`](../render.yaml) at the repo root.
 
-If Root Directory is set to `mythic-plus-party-shuffle-ui`, `npm install` runs **without** a committed lockfile there and the build can fail or drift from CI.
+**If Root Directory stays `mythic-plus-party-shuffle-ui`:** keep it, but the build **must** use the entry scripts so `npm ci` runs at the monorepo root (same lockfile as CI). Copy from `render.yaml`:
+
+1. **Build command:**  
+   `if [ -f mythic-plus-party-shuffle-ui/render-build-entry.sh ]; then bash mythic-plus-party-shuffle-ui/render-build-entry.sh; else bash render-build-entry.sh; fi`
+2. **Start command:**  
+   `if [ -f mythic-plus-party-shuffle-ui/render-start-entry.sh ]; then bash mythic-plus-party-shuffle-ui/render-start-entry.sh; else bash render-start-entry.sh; fi`
+3. **Node:** `NODE_VERSION=20.19.0` (or newer LTS).
+4. **`NEXT_PUBLIC_API_URL`** and **`BACKEND_URL`** on the UI service.
+
+Details: [`scripts/render-web-build.sh`](../scripts/render-web-build.sh), [`render-build-entry.sh`](render-build-entry.sh).
+
+Running only `npm install && npm run build` inside `mythic-plus-party-shuffle-ui` skips the root lockfile and often breaks or drifts from CI.
 
 Optional branding:
 
