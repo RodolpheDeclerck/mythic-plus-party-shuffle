@@ -1,9 +1,17 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
+  private readonly logger = new Logger(JwtAuthGuard.name);
+
   constructor(private reflector: Reflector) {
     super();
   }
@@ -22,18 +30,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest();
-    
     if (err || !user) {
-      console.log('❌ JwtAuthGuard - Authentication failed');
-      console.log('   Error:', err?.message);
-      console.log('   Info:', info?.message);
-      console.log('   Cookies:', request?.cookies);
-      console.log('   Authorization header:', request?.headers?.authorization);
+      const request = context.switchToHttp().getRequest<Request>();
+      const reason =
+        err instanceof Error ? err.message : info?.message || 'Authentication failed';
+      this.logger.warn(
+        `JWT auth failed: ${reason} (${request.method} ${request.path})`,
+      );
       throw err || new UnauthorizedException('Authentication failed');
     }
-    
-    console.log('✅ JwtAuthGuard - User authenticated:', user.id);
+
     return user;
   }
 }

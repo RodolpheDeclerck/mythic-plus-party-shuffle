@@ -43,6 +43,10 @@ New accounts store **Argon2id** hashes (memory cost ~19 MiB, time cost 3, parall
 
 In **production**, the app sets Express **`trust proxy`** to `1` so `X-Forwarded-For` is honored behind Render (or similar). Local dev without a reverse proxy does not enable it.
 
+## Security (logging)
+
+JWT authentication paths do **not** log cookies, `Authorization` headers, or full JWT payloads. `JwtAuthGuard` logs a single **`warn`** on failure (reason + HTTP method + path only). `JwtStrategy` logs **`warn`** on invalid payload or missing user (numeric user id only when relevant); optional **`debug`** on successful validation exists only when `NODE_ENV=development`.
+
 ## Project setup
 
 ```bash
