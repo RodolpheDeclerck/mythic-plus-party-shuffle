@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany } from 'typeorm';
-import { AppEvent } from './event.entity.js'; // Assure-toi que le chemin est correct
+import { AppEvent } from './event.entity';
 
 @Entity('users')
 export class User {
