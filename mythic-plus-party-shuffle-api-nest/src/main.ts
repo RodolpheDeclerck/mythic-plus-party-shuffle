@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { ValidationPipe, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { SocketIOAdapter } from './shared/websocket/socket-io.adapter';
 
@@ -18,6 +19,15 @@ async function bootstrap() {
   if (nodeEnv === 'production') {
     app.getHttpAdapter().getInstance().set('trust proxy', 1);
   }
+
+  app.use(
+    helmet({
+      // API returns JSON only; a CSP on the API surface would only get in the way.
+      contentSecurityPolicy: false,
+      // Front-end is served from a different origin.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   app.use(cookieParser());
   

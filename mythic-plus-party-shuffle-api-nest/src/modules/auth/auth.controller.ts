@@ -12,7 +12,7 @@ import {
 import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, VerifyTokenDto } from './dto';
+import { ChangePasswordDto, LoginDto, RegisterDto, VerifyTokenDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthRateLimit } from './auth-rate-limit.decorator';
 import { AuthRateLimitGuard } from './auth-rate-limit.guard';
@@ -101,6 +101,14 @@ export class AuthController {
     });
 
     return { message: 'Déconnexion réussie' };
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Req() req: Request, @Body() dto: ChangePasswordDto) {
+    const user = req.user as { id: number };
+    return this.authService.changePassword(user.id, dto.currentPassword, dto.newPassword);
   }
 
   @Get('me')

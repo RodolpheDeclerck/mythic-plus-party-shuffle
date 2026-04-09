@@ -26,18 +26,64 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Security (HTTP headers)
+
+`helmet` is mounted in [`src/main.ts`](src/main.ts) before `cookie-parser` and CORS. Defaults are kept except:
+
+- `contentSecurityPolicy: false` — the API serves JSON only; CSP belongs to the front-end origin.
+- `crossOriginResourcePolicy: 'cross-origin'` — the front-end is hosted on a different domain.
+
+`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-DNS-Prefetch-Control`, `X-Frame-Options`, etc. are emitted by Helmet's defaults.
+
 ## Security (passwords)
 
 New accounts store **Argon2id** hashes (memory cost ~19 MiB, time cost 3, parallelism 4). Existing rows that still use the legacy 64-character hex HMAC format are verified on login and **re-hashed to Argon2** automatically. The `salt` column is left empty for Argon2 rows (the encoded hash embeds its own salt).
 
-## Security (rate limiting)
+### Password policy
 
-`POST /auth/login` and `POST /auth/register` are limited **per client IP** using Redis fixed windows (`INCR` + `EXPIRE`). Over the limit returns **429** with a **`Retry-After`** header (seconds).
+A `PasswordPolicyService` enforces uniform requirements at `register`, `login` and `change-password`:
+
+- At least **10 characters**
+- At least **3 of 4 character classes** (lowercase, uppercase, digit, special)
+- Not in the local blocklist of common passwords (`src/modules/auth/common-passwords.data.ts`)
+- Optional **HIBP k-anonymity** check via `https://api.pwnedpasswords.com/range/...` when `AUTH_HIBP_CHECK=true`. Only the first 5 chars of the SHA-1 hash leave the server. Network errors fail open (logged as `warn`) so a HIBP outage cannot DoS user signups.
+
+The login path applies `validateSync` (no HIBP) on every successful credential check. If the existing password no longer satisfies the policy, the login is rejected with **HTTP 403** and JSON `{ "code": "password_policy_outdated" }` — distinct from the `401 Invalid credentials` returned for wrong passwords. Affected users must call `POST /auth/change-password` (or be reset out-of-band) before they can sign in again.
+
+### `POST /auth/change-password`
+
+Authenticated route (`JwtAuthGuard`). Body:
+
+```json
+{ "currentPassword": "...", "newPassword": "..." }
+```
+
+Verifies `currentPassword`, applies the full policy (HIBP included) on `newPassword`, then re-hashes with Argon2id.
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
-| `AUTH_LOGIN_RL_LIMIT` | `10` | Max login attempts per window |
-| `AUTH_LOGIN_RL_WINDOW_SEC` | `900` | Login window (15 minutes) |
+| `AUTH_HIBP_CHECK` | `false` | Enable HIBP k-anonymity lookup at register / change-password. |
+| `AUTH_HIBP_TIMEOUT_MS` | `2000` | HIBP request timeout (ms). Fail-open beyond. |
+
+## Security (rate limiting)
+
+`POST /auth/login` and `POST /auth/register` are limited via Redis fixed windows (`INCR` + `EXPIRE`). Over the limit returns **429** with a **`Retry-After`** header (seconds).
+
+`POST /auth/login` is rate-limited on **two independent buckets** consumed in parallel:
+
+- `rl:auth:login:ip:<ip>` — per-client-IP, default 10 requests / 15 min.
+- `rl:auth:login:email:<sha256(email)>` — per-account, default 5 requests / 15 min. The email is **hashed** (lowercased, trimmed) before being used as a Redis key, never stored in plaintext. This blocks distributed credential-stuffing where one password is tried against one email from many IPs.
+
+Either bucket exceeding its limit triggers a **429**; `Retry-After` is the longer of the two TTLs.
+
+`POST /auth/register` only uses the IP bucket (`rl:auth:register:ip:<ip>`).
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `AUTH_LOGIN_RL_LIMIT` | `10` | Max login attempts per IP/window |
+| `AUTH_LOGIN_RL_WINDOW_SEC` | `900` | Login IP window (15 minutes) |
+| `AUTH_LOGIN_EMAIL_RL_LIMIT` | `5` | Max login attempts per email/window |
+| `AUTH_LOGIN_EMAIL_RL_WINDOW_SEC` | `900` | Login email window (15 minutes) |
 | `AUTH_REGISTER_RL_LIMIT` | `5` | Max registrations per window |
 | `AUTH_REGISTER_RL_WINDOW_SEC` | `3600` | Register window (1 hour) |
 

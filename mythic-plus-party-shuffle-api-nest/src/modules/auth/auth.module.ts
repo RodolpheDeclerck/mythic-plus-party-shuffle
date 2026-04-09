@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { PasswordHashingService } from './password-hashing.service';
+import { PasswordPolicyService } from './password-policy.service';
 import { AuthController } from './auth.controller';
 import { RateLimitService } from './rate-limit.service';
 import { AuthRateLimitGuard } from './auth-rate-limit.guard';
@@ -32,7 +33,14 @@ import { User } from '../../shared/entities/user.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PasswordHashingService, RateLimitService, AuthRateLimitGuard, JwtStrategy],
+  providers: [
+    AuthService,
+    PasswordHashingService,
+    PasswordPolicyService,
+    RateLimitService,
+    AuthRateLimitGuard,
+    JwtStrategy,
+  ],
   exports: [AuthService, JwtModule, PassportModule],
 })
 export class AuthModule {}
