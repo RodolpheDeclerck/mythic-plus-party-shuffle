@@ -1,7 +1,7 @@
 'use client';
 
 import type { DragEvent, ElementType } from 'react';
-import { Crosshair, GripVertical, Heart, Shield, Sword } from 'lucide-react';
+import { Crosshair, GripVertical, Heart, Shield, Sword, User } from 'lucide-react';
 import { BloodlustIcon, BattleRezIcon } from '@/components/EventView/wow-icons';
 import type { EventParticipant } from '@/components/EventView/eventPartyModel';
 import { wowClassTextColors } from '@/components/EventView/eventClassColors';
@@ -18,10 +18,7 @@ function participantSlotIcon(p: EventParticipant) {
 export function GroupParticipantSlot({
   participant,
   groupId,
-  slot,
-  slotIcon: SlotIcon,
-  iconColor,
-  emptyText,
+  slotIndex,
   isAdmin,
   draggedItem,
   dragOverParticipant,
@@ -34,10 +31,7 @@ export function GroupParticipantSlot({
 }: {
   participant: EventParticipant | null;
   groupId: string;
-  slot: 'tank' | 'healer' | 'dps';
-  slotIcon: ElementType;
-  iconColor: string;
-  emptyText: string;
+  slotIndex: number;
   isAdmin: boolean;
   draggedItem: DraggedPartyItem | null;
   dragOverParticipant: string | null;
@@ -46,7 +40,7 @@ export function GroupParticipantSlot({
     e: DragEvent,
     p: EventParticipant,
     gid: string,
-    s: 'tank' | 'healer' | 'dps',
+    slotIndex: number,
   ) => void;
   onDragEnd: () => void;
   onDragOver: (e: DragEvent, gid: string, pid?: string) => void;
@@ -54,7 +48,7 @@ export function GroupParticipantSlot({
   onDrop: (
     e: DragEvent,
     gid: string,
-    s: 'tank' | 'healer' | 'dps',
+    slotIndex: number,
     targetPid?: string,
   ) => void;
 }) {
@@ -63,9 +57,7 @@ export function GroupParticipantSlot({
     dragOverParticipant === participant?.id &&
     draggedItem?.participant.id !== participant?.id;
   const canSwap =
-    draggedItem &&
-    draggedItem.slot === slot &&
-    draggedItem.participant.id !== participant?.id;
+    draggedItem && draggedItem.participant.id !== participant?.id;
 
   if (!participant) {
     return (
@@ -73,11 +65,11 @@ export function GroupParticipantSlot({
         className="flex items-center gap-2 rounded border border-dashed border-purple-500/20 p-1.5 opacity-50"
         onDragOver={(e) => onDragOver(e, groupId)}
         onDragLeave={onDragLeave}
-        onDrop={(e) => onDrop(e, groupId, slot)}
+        onDrop={(e) => onDrop(e, groupId, slotIndex)}
       >
-        <SlotIcon className={`h-4 w-4 flex-shrink-0 ${iconColor}`} />
+        <User className="h-4 w-4 flex-shrink-0 text-muted-foreground/40" />
         <span className="text-sm italic text-muted-foreground/50">
-          {emptyText}
+          {tEv('emptySlot')} {slotIndex + 1}
         </span>
       </div>
     );
@@ -89,14 +81,14 @@ export function GroupParticipantSlot({
   return (
     <div
       draggable={isAdmin}
-      onDragStart={(e) => onDragStart(e, participant, groupId, slot)}
+      onDragStart={(e) => onDragStart(e, participant, groupId, slotIndex)}
       onDragEnd={onDragEnd}
       onDragOver={(e) => {
         e.stopPropagation();
         onDragOver(e, groupId, participant.id);
       }}
       onDragLeave={onDragLeave}
-      onDrop={(e) => onDrop(e, groupId, slot, participant.id)}
+      onDrop={(e) => onDrop(e, groupId, slotIndex, participant.id)}
       className={`flex items-center gap-2 rounded p-1.5 transition-all ${
         isAdmin ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
       } ${

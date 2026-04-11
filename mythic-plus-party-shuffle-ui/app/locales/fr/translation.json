@@ -252,6 +252,7 @@
     "group": "Groupe",
     "noTank": "Pas de tank",
     "noHealer": "Pas de soigneur",
+    "emptySlot": "Emplacement",
     "missing": "Manque :",
     "complete": "Complet",
     "shuffleAgain": "Mélanger à nouveau",

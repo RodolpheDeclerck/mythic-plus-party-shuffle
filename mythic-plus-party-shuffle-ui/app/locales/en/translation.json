@@ -252,6 +252,7 @@
     "group": "Group",
     "noTank": "No tank",
     "noHealer": "No healer",
+    "emptySlot": "Slot",
     "missing": "Missing:",
     "complete": "Complete",
     "shuffleAgain": "Shuffle again",
