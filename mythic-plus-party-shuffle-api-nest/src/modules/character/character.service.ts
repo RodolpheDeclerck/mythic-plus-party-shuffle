@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-import { Character } from '../../shared/entities/character.entity';
-import { AppEvent } from '../../shared/entities/event.entity';
+import { PrismaService } from '../../shared/prisma/prisma.service';
+import { Prisma } from '../../../generated/prisma/client';
 import { SpecializationDetails } from '../../shared/data/specializationsDetails.data';
 import { CreateCharacterDto } from './dto/create-character.dto';
 import { UpdateCharacterDto } from './dto/update-character.dto';
@@ -10,15 +8,10 @@ import { UpsertCharacterDto } from './dto/upsert-character.dto';
 
 @Injectable()
 export class CharacterService {
-  constructor(
-    @InjectRepository(Character)
-    private characterRepository: Repository<Character>,
-    @InjectRepository(AppEvent)
-    private eventRepository: Repository<AppEvent>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async createCharacter(data: CreateCharacterDto): Promise<Character> {
-    const event = await this.eventRepository.findOne({
+  async createCharacter(data: CreateCharacterDto) {
+    const event = await this.prisma.event.findUnique({
       where: { code: data.eventCode },
     });
 
@@ -26,120 +19,113 @@ export class CharacterService {
       throw new NotFoundException('Event not found');
     }
 
-    const character = new Character();
-    character.name = data.name;
-    character.characterClass = data.characterClass;
-
     const specializationInfo = SpecializationDetails[data.specialization];
 
     if (!specializationInfo) {
       throw new Error(`Invalid specialization: ${data.specialization}`);
     }
 
-    character.specialization = data.specialization;
-    character.iLevel = data.iLevel;
-    character.role = specializationInfo.role;
-    character.bloodLust = specializationInfo.bloodLust;
-    character.battleRez = specializationInfo.battleRez;
-    character.event = event;
-    character.keystoneMinLevel = data.keystoneMinLevel;
-    character.keystoneMaxLevel = data.keystoneMaxLevel;
-
-    return await this.characterRepository.save(character);
+    return await this.prisma.character.create({
+      data: {
+        name: data.name,
+        characterClass: data.characterClass,
+        specialization: data.specialization,
+        iLevel: data.iLevel,
+        role: specializationInfo.role,
+        bloodLust: specializationInfo.bloodLust,
+        battleRez: specializationInfo.battleRez,
+        keystoneMinLevel: data.keystoneMinLevel,
+        keystoneMaxLevel: data.keystoneMaxLevel,
+        eventCode: data.eventCode,
+      },
+    });
   }
 
-  async getAllCharacters(): Promise<Character[]> {
-    return await this.characterRepository.find();
+  async getAllCharacters() {
+    return await this.prisma.character.findMany();
   }
 
-  async getCharacterById(id: number): Promise<Character | null> {
-    return await this.characterRepository.findOne({ where: { id } });
+  async getCharacterById(id: number) {
+    return await this.prisma.character.findUnique({ where: { id } });
   }
 
-  async updateCharacter(id: number, data: UpdateCharacterDto): Promise<Character> {
-    const character = await this.characterRepository.findOne({ 
+  async updateCharacter(id: number, data: UpdateCharacterDto) {
+    const character = await this.prisma.character.findUnique({
       where: { id },
-      relations: ['event'], // ✅ Charger la relation event
+      include: { event: true },
     });
 
     if (!character) {
       throw new NotFoundException(`Character with ID ${id} not found`);
     }
 
-    if (data.name) character.name = data.name;
-    if (data.characterClass) character.characterClass = data.characterClass;
+    const updateData: Prisma.CharacterUpdateInput = {};
+
+    if (data.name) updateData.name = data.name;
+    if (data.characterClass) updateData.characterClass = data.characterClass;
     if (data.specialization) {
       const specializationInfo = SpecializationDetails[data.specialization];
       if (!specializationInfo) {
         throw new Error(`Invalid specialization: ${data.specialization}`);
       }
-      character.specialization = data.specialization;
-      character.role = specializationInfo.role;
-      character.bloodLust = specializationInfo.bloodLust;
-      character.battleRez = specializationInfo.battleRez;
+      updateData.specialization = data.specialization;
+      updateData.role = specializationInfo.role;
+      updateData.bloodLust = specializationInfo.bloodLust;
+      updateData.battleRez = specializationInfo.battleRez;
     }
-    if (data.iLevel) character.iLevel = data.iLevel;
-    if (data.keystoneMinLevel) character.keystoneMinLevel = data.keystoneMinLevel;
-    if (data.keystoneMaxLevel) character.keystoneMaxLevel = data.keystoneMaxLevel;
+    if (data.iLevel) updateData.iLevel = data.iLevel;
+    if (data.keystoneMinLevel) updateData.keystoneMinLevel = data.keystoneMinLevel;
+    if (data.keystoneMaxLevel) updateData.keystoneMaxLevel = data.keystoneMaxLevel;
 
     if (data.eventCode) {
-      const event = await this.eventRepository.findOne({
+      const event = await this.prisma.event.findUnique({
         where: { code: data.eventCode },
       });
       if (!event) {
         throw new NotFoundException('Event not found');
       }
-      character.event = event;
+      updateData.event = { connect: { code: data.eventCode } };
     }
 
-    const savedCharacter = await this.characterRepository.save(character);
-    
-    // ✅ Recharger le character avec la relation event pour s'assurer qu'elle est chargée
-    const characterWithEvent = await this.characterRepository.findOne({
-      where: { id: savedCharacter.id },
-      relations: ['event'],
+    return await this.prisma.character.update({
+      where: { id },
+      data: updateData,
+      include: { event: true },
     });
-
-    return characterWithEvent || savedCharacter;
   }
 
   async deleteCharacter(id: number): Promise<void> {
-    const character = await this.characterRepository.findOneBy({ id });
-
-    if (!character) {
-      throw new NotFoundException(`Character with ID ${id} not found`);
+    try {
+      await this.prisma.character.update({
+        where: { id },
+        data: { eventCode: null },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new NotFoundException(`Character with ID ${id} not found`);
+      }
+      throw e;
     }
-
-    character.event = null;
-    await this.characterRepository.save(character);
   }
 
   async deleteCharacters(ids: number[]): Promise<void> {
-    const characters = await this.characterRepository.find({
-      where: { id: In(ids) },
+    const { count } = await this.prisma.character.updateMany({
+      where: { id: { in: ids } },
+      data: { eventCode: null },
     });
 
-    if (characters.length !== ids.length) {
+    if (count !== ids.length) {
       throw new NotFoundException('One or more characters not found');
     }
-
-    await Promise.all(
-      characters.map(async (character) => {
-        character.event = null;
-        await this.characterRepository.save(character);
-      }),
-    );
   }
 
-  async upsertCharacter(data: UpsertCharacterDto): Promise<Character> {
+  async upsertCharacter(data: UpsertCharacterDto) {
     if (data.id) {
       const existing = await this.getCharacterById(data.id);
       if (existing) {
-        // ✅ Convertir en UpdateCharacterDto (tous les champs sont optionnels)
         return await this.updateCharacter(data.id, data as UpdateCharacterDto);
       }
     }
-    // ✅ Pour créer, on doit avoir les champs obligatoires
     if (!data.name || !data.characterClass || !data.specialization || !data.iLevel || !data.eventCode) {
       throw new BadRequestException('Les champs name, characterClass, specialization, iLevel et eventCode sont requis pour créer un nouveau personnage');
     }

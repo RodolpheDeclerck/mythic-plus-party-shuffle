@@ -1,7 +1,6 @@
 // src/modules/character/dto/create-character.dto.ts
 import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { CharacterClass } from '../../../shared/enums/characterClass.enum';
-import { Specialization } from '../../../shared/enums/specialization.enum';
+import { CharacterClass, Specialization } from '../../../../generated/prisma/client';
 
 export class CreateCharacterDto {
   @IsString()

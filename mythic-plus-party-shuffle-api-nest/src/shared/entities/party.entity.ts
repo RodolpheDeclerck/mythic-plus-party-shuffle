@@ -1,4 +1,4 @@
-import { Character } from './character.entity';
+import type { Character } from '../../../generated/prisma/client';
 
 export class Party {
   id!: number;

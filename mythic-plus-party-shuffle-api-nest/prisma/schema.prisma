@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums — mapped to existing PostgreSQL enum types
+// ---------------------------------------------------------------------------
+
+enum CharacterClass {
+  Warrior
+  Deathknight
+  Paladin
+  Monk
+  Priest
+  Mage
+  Druid
+  Rogue
+  Hunter
+  Demon_Hunter @map("Demon Hunter")
+  Warlock
+  Evoker
+  Shaman
+
+  @@map("character_characterclass_enum")
+}
+
+enum Role {
+  TANK
+  HEAL
+  CAC
+  DIST
+
+  @@map("character_role_enum")
+}
+
+enum Specialization {
+  Warrior_Arms
+  Warrior_Fury
+  Warrior_Protection
+  Paladin_Holy
+  Paladin_Protection
+  Paladin_Retribution
+  Hunter_BeastMastery
+  Hunter_Marksmanship
+  Hunter_Survival
+  Rogue_Assassination
+  Rogue_Outlaw
+  Rogue_Subtlety
+  Priest_Discipline
+  Priest_Holy
+  Priest_Shadow
+  DeathKnight_Blood
+  DeathKnight_Frost
+  DeathKnight_Unholy
+  Shaman_Elemental
+  Shaman_Enhancement
+  Shaman_Restoration
+  Mage_Arcane
+  Mage_Fire
+  Mage_Frost
+  Warlock_Affliction
+  Warlock_Demonology
+  Warlock_Destruction
+  Monk_Brewmaster
+  Monk_Mistweaver
+  Monk_Windwalker
+  Druid_Balance
+  Druid_Feral
+  Druid_Guardian
+  Druid_Restoration
+  DemonHunter_Havoc
+  DemonHunter_Devourer
+  DemonHunter_Vengeance
+  Evoker_Devastation
+  Evoker_Preservation
+  Evoker_Augmentation
+
+  @@map("character_specialization_enum")
+}
+
+// ---------------------------------------------------------------------------
+// Models — matching actual DB schema from introspection
+// ---------------------------------------------------------------------------
+
+model User {
+  id           Int     @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(autoincrement())
+  username     String  @unique(map: "UQ_fe0bb3f6520ee0469504521e710") @db.VarChar(255)
+  email        String  @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.VarChar(255)
+  password     String  @db.VarChar
+  salt         String  @db.VarChar
+  sessionToken String? @db.VarChar
+
+  eventsCreated Event[]      @relation("EventCreator")
+  adminOf       EventAdmin[]
+
+  @@map("users")
+}
+
+model Event {
+  id                Int       @id(map: "PK_40731c7151fe4be3116e45ddf73") @default(autoincrement())
+  code              String    @unique(map: "UQ_0dcf33a3c6edf9ba546f30d801e") @db.VarChar
+  name              String    @db.VarChar
+  createdAt         DateTime  @default(now()) @db.Timestamp(6)
+  expiresAt         DateTime? @db.Timestamp(6)
+  updatedAt         DateTime  @default(now()) @db.Timestamp(6)
+  arePartiesVisible Boolean   @default(false)
+
+  createdById Int?
+  createdBy   User? @relation("EventCreator", fields: [createdById], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_2fb864f37ad210f4295a09b684d")
+
+  characters Character[]
+  admins     EventAdmin[]
+
+  @@map("events")
+}
+
+model Character {
+  id               Int            @id(map: "PK_6c4aec48c564968be15078b8ae5") @default(autoincrement())
+  name             String         @db.VarChar
+  characterClass   CharacterClass
+  specialization   Specialization
+  iLevel           Int
+  role             Role
+  bloodLust        Boolean        @default(false)
+  battleRez        Boolean        @default(false)
+  keystoneMinLevel Int            @default(2)
+  keystoneMaxLevel Int            @default(99)
+
+  eventCode String? @db.VarChar
+  event     Event?  @relation(fields: [eventCode], references: [code], onDelete: Cascade, onUpdate: NoAction, map: "FK_a2a1e604587dd7415b4964a9e07")
+
+  @@map("character")
+}
+
+model EventAdmin {
+  eventId Int @map("event_id")
+  userId  Int @map("user_id")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, map: "FK_46b9b4b7865c81cb4d723a35b7e")
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_6918af9fd3be1ddc04b41d998b8")
+
+  @@id([eventId, userId], map: "PK_a7f2c3c48d438a9430813246aa6")
+  @@index([eventId], map: "IDX_46b9b4b7865c81cb4d723a35b7")
+  @@index([userId], map: "IDX_6918af9fd3be1ddc04b41d998b")
+  @@map("event_admins")
+}
+
+// Legacy tables — exist in DB but not used by the application (parties use Redis).
+// Kept here so Prisma doesn't try to drop them.
+
+model LegacyMigration {
+  id        Int    @id(map: "PK_8c82d7f526340ab734260ea46be") @default(autoincrement())
+  timestamp BigInt
+  name      String @db.VarChar
+
+  @@map("migrations")
+}
+
+model LegacyParty {
+  id          Int                     @id @default(autoincrement())
+  created_at  DateTime?               @default(now()) @db.Timestamptz(6)
+  status      String?                 @db.VarChar(50)
+  shuffle_round Int?
+  members     LegacyPartyMember[]
+  modifications LegacyPartyModification[]
+
+  @@map("parties")
+}
+
+model LegacyPartyMember {
+  id               Int       @id @default(autoincrement())
+  party_id         Int?
+  character_name   String?   @db.VarChar(255)
+  character_class  String?   @db.VarChar(50)
+  specialization   String?   @db.VarChar(50)
+  role             String?   @db.VarChar(50)
+  item_level       Decimal?  @db.Decimal(5, 2)
+  keystone_min     Int?
+  keystone_max     Int?
+  raider_io_score  Int?
+  is_melee         Boolean?
+  has_battle_rez   Boolean?
+  has_bloodlust    Boolean?
+  party            LegacyParty? @relation(fields: [party_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  modificationsAsNew      LegacyPartyModification[] @relation("new_member")
+  modificationsAsPrevious LegacyPartyModification[] @relation("previous_member")
+
+  @@map("party_members")
+}
+
+model LegacyPartyModification {
+  id                 Int       @id @default(autoincrement())
+  party_id           Int?
+  modified_at        DateTime? @default(now()) @db.Timestamptz(6)
+  reason             String?   @db.VarChar(255)
+  previous_member_id Int?
+  new_member_id      Int?
+  newMember          LegacyPartyMember? @relation("new_member", fields: [new_member_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  party              LegacyParty?       @relation(fields: [party_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  previousMember     LegacyPartyMember? @relation("previous_member", fields: [previous_member_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("party_modifications")
+}

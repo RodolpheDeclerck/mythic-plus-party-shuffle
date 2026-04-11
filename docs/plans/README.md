@@ -9,6 +9,7 @@ Index des plans versionnés avec le code. **Convention de nom :** `NN-titre-en-k
 | 03 | [03-jwt-logging-hardening.md](03-jwt-logging-hardening.md) | Logs JWT : pas de cookies / headers / payload ; Logger Nest |
 | 04 | [04-api-console-to-logger.md](04-api-console-to-logger.md) | Remplacer `console.*` restant par `Logger` (party, event, WS, bootstrap) |
 | 05 | [05-generic-party-slots.md](05-generic-party-slots.md) | Slots de groupe generiques, drag & drop cross-role, double-clic edit, sync roles |
+| 06 | [06-typeorm-to-prisma.md](06-typeorm-to-prisma.md) | Migration TypeORM → Prisma (schema, services, enums, cleanup) |
 
 **Nouveau plan :** utiliser le numéro suivant (ex. `05-nom-du-plan.md`) et ajouter une ligne dans ce tableau.
 

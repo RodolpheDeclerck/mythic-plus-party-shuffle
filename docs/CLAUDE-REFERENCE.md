@@ -9,7 +9,7 @@
 ```
 AppModule
 ├── ConfigModule (global, .env)
-├── TypeOrmModule (PostgreSQL, JS migrations)
+├── PrismaModule (global, PostgreSQL via Prisma)
 ├── RedisModule (global, REDIS_CLIENT)
 ├── WebSocketModule (gateway + WebSocketService)
 ├── AuthModule (JWT + Passport + RateLimitService)
@@ -25,28 +25,33 @@ AppModule
 - Nest root: `src/app.module.ts`, `src/main.ts`
 - Shuffle & Redis: `src/modules/party/party.service.ts`, `src/modules/party/party.controller.ts`
 - Facade: `src/shared/facade/party.facade.ts`
-- Entities: `src/shared/entities/*.entity.ts`
+- Prisma schema: `prisma/schema.prisma`
+- Prisma service: `src/shared/prisma/prisma.service.ts`
 - WS Gateway: `src/shared/websocket/`
 - Event UI: `app/event/page.tsx`, `app/components/EventView/EventView.tsx`
 
 ---
 
-## TypeORM Entities
+## Prisma Models (`prisma/schema.prisma`)
 
 ### `User` (`users`)
-- Sensitive fields with `select: false`: `password`, `salt`, `sessionToken`
-- Relations: `eventsCreated` (1-n), `eventsAdmin` (M2M via `event_admins` table)
+- Sensitive fields excluded via `select` in queries: `password`, `salt`, `sessionToken`
+- Relations: `eventsCreated` (1-n Event), `adminOf` (1-n EventAdmin)
 
-### `AppEvent` (`events`)
-- `code`: truncated UUID generated in `@BeforeInsert`, unique, main business key in Redis and routes
-- `admins`: M2M with `User` via `event_admins` table
+### `Event` (`events`)
+- `code`: truncated UUID generated in `EventService.createEvent()`, unique, main business key
+- `admins`: via explicit `EventAdmin` join model (flattened to `User[]` by `EventService.flattenAdmins()`)
 - `arePartiesVisible`: boolean flag controlling party visibility
 
-### `Character` (default TypeORM table)
-- Enums: `CharacterClass`, `Specialization`, `Role`
+### `Character` (`character`)
+- Enums from `@prisma/client`: `CharacterClass`, `Specialization`, `Role`
 - Flags: `bloodLust`, `battleRez`
 - Key range: `keystoneMinLevel`, `keystoneMaxLevel`
-- Linked to event via `eventCode` -> `AppEvent.code` (logical FK)
+- Linked to event via `eventCode` -> `Event.code` (FK)
+
+### `EventAdmin` (`event_admins`)
+- Explicit join model for Event ↔ User M2M
+- Composite PK: `(eventId, userId)`
 
 ### `Party` (Redis only — no SQL table)
 - Model: `{ id: string, members: Character[] }`
