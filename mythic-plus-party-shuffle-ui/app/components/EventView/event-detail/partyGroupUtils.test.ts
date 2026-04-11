@@ -33,16 +33,20 @@ const participant = (
 describe('partyGroupContainsCharacterId', () => {
   const group: EventPartyGroup = {
     id: 'g1',
-    tank: participant('1'),
-    healer: participant('2'),
-    dps: [participant('3'), participant('4'), participant('5')],
+    members: [
+      participant('1'),
+      participant('2'),
+      participant('3'),
+      participant('4'),
+      participant('5'),
+    ],
   };
 
-  it('detects tank', () => {
+  it('detects member by id', () => {
     expect(partyGroupContainsCharacterId(group, 1)).toBe(true);
   });
 
-  it('detects dps', () => {
+  it('detects member in any slot', () => {
     expect(partyGroupContainsCharacterId(group, 4)).toBe(true);
   });
 
@@ -52,21 +56,17 @@ describe('partyGroupContainsCharacterId', () => {
 });
 
 describe('getGroupSize', () => {
-  it('counts slots', () => {
+  it('counts filled slots', () => {
     expect(
       getGroupSize({
         id: 'g',
-        tank: null,
-        healer: null,
-        dps: [],
+        members: [null, null, null, null, null],
       }),
     ).toBe(0);
     expect(
       getGroupSize({
         id: 'g',
-        tank: participant('1'),
-        healer: participant('2'),
-        dps: [participant('3')],
+        members: [participant('1'), participant('2'), participant('3'), null, null],
       }),
     ).toBe(3);
   });
@@ -77,9 +77,7 @@ describe('isGroupEmpty', () => {
     expect(
       isGroupEmpty({
         id: 'g',
-        tank: null,
-        healer: null,
-        dps: [],
+        members: [null, null, null, null, null],
       }),
     ).toBe(true);
   });
@@ -90,15 +88,11 @@ describe('assignedParticipantIds', () => {
     const groups: EventPartyGroup[] = [
       {
         id: 'a',
-        tank: participant('10'),
-        healer: null,
-        dps: [participant('11')],
+        members: [participant('10'), null, participant('11'), null, null],
       },
       {
         id: 'b',
-        tank: null,
-        healer: participant('20'),
-        dps: [],
+        members: [null, participant('20'), null, null, null],
       },
     ];
     expect(assignedParticipantIds(groups)).toEqual(new Set(['10', '11', '20']));
@@ -110,9 +104,7 @@ describe('getPartyGroupAggregateStats', () => {
     expect(
       getPartyGroupAggregateStats({
         id: 'g',
-        tank: null,
-        healer: null,
-        dps: [],
+        members: [null, null, null, null, null],
       }),
     ).toBeNull();
   });
@@ -120,9 +112,13 @@ describe('getPartyGroupAggregateStats', () => {
   it('aggregates ilvl and keys', () => {
     const stats = getPartyGroupAggregateStats({
       id: 'g',
-      tank: participant('1', { ilvl: 100, keyMin: 2, keyMax: 4 }),
-      healer: participant('2', { ilvl: 200, keyMin: 5, keyMax: 8 }),
-      dps: [],
+      members: [
+        participant('1', { ilvl: 100, keyMin: 2, keyMax: 4 }),
+        participant('2', { ilvl: 200, keyMin: 5, keyMax: 8 }),
+        null,
+        null,
+        null,
+      ],
     });
     expect(stats).toEqual({
       minIlvl: 100,

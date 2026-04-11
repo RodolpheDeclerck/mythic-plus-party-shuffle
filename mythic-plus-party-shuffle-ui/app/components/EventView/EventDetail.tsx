@@ -92,11 +92,7 @@ export function EventDetail({
     if (viewerCharacterId == null) return [];
     return shuffledGroups.filter((g) => {
       const sid = String(viewerCharacterId);
-      return (
-        g.tank?.id === sid ||
-        g.healer?.id === sid ||
-        g.dps.some((d) => d.id === sid)
-      );
+      return g.members.some((m) => m?.id === sid);
     });
   }, [isAdmin, arePartiesVisible, shuffledGroups, viewerCharacterId]);
 

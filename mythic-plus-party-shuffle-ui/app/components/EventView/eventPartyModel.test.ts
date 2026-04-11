@@ -70,16 +70,21 @@ describe('partyToEventPartyGroup', () => {
 
   const specLabel = (c: Character) => `S${c.id}`;
 
-  it('assigns tank, healer, and remaining as dps', () => {
+  it('assigns tank first, healer second, then remaining', () => {
     const party: Party = {
       members: [mk(1, 'TANK'), mk(2, 'HEAL'), mk(3, 'CAC'), mk(4, 'DIST')],
     };
     const g = partyToEventPartyGroup(party, 0, specLabel);
     expect(g.id).toBe('group-0');
-    expect(g.tank?.id).toBe('1');
-    expect(g.tank?.spec).toBe('S1');
-    expect(g.healer?.id).toBe('2');
-    const dpsIds = g.dps.map((d) => d.id).sort();
+    expect(g.members[0]?.id).toBe('1');
+    expect(g.members[0]?.spec).toBe('S1');
+    expect(g.members[1]?.id).toBe('2');
+    const dpsIds = g.members
+      .slice(2)
+      .filter((m) => m != null)
+      .map((m) => m.id)
+      .sort();
     expect(dpsIds).toEqual(['3', '4']);
+    expect(g.members).toHaveLength(5);
   });
 });

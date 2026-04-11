@@ -21,9 +21,7 @@ export interface EventParticipant {
 
 export interface EventPartyGroup {
   id: string;
-  tank: EventParticipant | null;
-  healer: EventParticipant | null;
-  dps: EventParticipant[];
+  members: (EventParticipant | null)[];
 }
 
 export function characterRoleToEventView(
@@ -107,23 +105,11 @@ export function partyToEventPartyGroup(
   index: number,
   specLabel: (c: Character) => string,
 ): EventPartyGroup {
-  const members = [...party.members];
-  const tankChar = members.find((m) => m.role === 'TANK');
-  const healChar = members.find((m) => m.role === 'HEAL');
-  const taken = new Set(
-    [tankChar?.id, healChar?.id].filter((x): x is number => x != null),
+  const slots: (EventParticipant | null)[] = party.members.map((m) =>
+    charToSlotParticipant(m, specLabel(m)),
   );
-  const rest = members.filter((m) => !taken.has(m.id));
-  return {
-    id: `group-${index}`,
-    tank: tankChar
-      ? charToSlotParticipant(tankChar, specLabel(tankChar))
-      : null,
-    healer: healChar
-      ? charToSlotParticipant(healChar, specLabel(healChar))
-      : null,
-    dps: rest.map((m) => charToSlotParticipant(m, specLabel(m))),
-  };
+  while (slots.length < 5) slots.push(null);
+  return { id: `group-${index}`, members: slots.slice(0, 5) };
 }
 
 export function partiesToEventPartyGroups(
@@ -163,9 +149,7 @@ export function eventPartyGroupsToParties(
         keystoneMaxLevel: p.keyMax,
       });
     };
-    add(g.tank);
-    add(g.healer);
-    g.dps.forEach((d) => add(d));
+    g.members.forEach((m) => add(m));
     return { members };
   });
 }

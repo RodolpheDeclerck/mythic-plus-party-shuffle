@@ -15,11 +15,7 @@ export function partyGroupContainsCharacterId(
   id: number,
 ): boolean {
   const sid = String(id);
-  return (
-    group.tank?.id === sid ||
-    group.healer?.id === sid ||
-    group.dps.some((d) => d.id === sid)
-  );
+  return group.members.some((m) => m?.id === sid);
 }
 
 export function getPartyGroupAggregateStats(group: EventPartyGroup): {
@@ -29,7 +25,7 @@ export function getPartyGroupAggregateStats(group: EventPartyGroup): {
   minKey: number;
   maxKey: number;
 } | null {
-  const members = [group.tank, group.healer, ...group.dps].filter(
+  const members = group.members.filter(
     (m): m is EventParticipant => m != null,
   );
   if (members.length === 0) return null;
@@ -45,13 +41,17 @@ export function getPartyGroupAggregateStats(group: EventPartyGroup): {
 }
 
 export function getPartyGroupCompositionStatus(group: EventPartyGroup) {
-  const members = [group.tank, group.healer, ...group.dps].filter(
+  const members = group.members.filter(
     (m): m is EventParticipant => m != null,
   );
-  const missingTank = !group.tank;
-  const missingHealer = !group.healer;
-  const dpsCount = group.dps.filter(Boolean).length;
-  const missingDps = 3 - dpsCount;
+  const hasTank = members.some((m) => m.role === 'tank');
+  const hasHealer = members.some((m) => m.role === 'healer');
+  const dpsCount = members.filter(
+    (m) => m.role === 'meleeDps' || m.role === 'rangedDps',
+  ).length;
+  const missingTank = !hasTank;
+  const missingHealer = !hasHealer;
+  const missingDps = Math.max(0, 3 - dpsCount);
   const hasBloodlust = members.some((m) => m.hasBloodlust);
   const hasBattleRez = members.some((m) => m.hasBattleRez);
   const hasMissing =
@@ -94,29 +94,27 @@ export function adminGroupIlvlBadgeClass(ilvl: number): string {
 }
 
 export function getGroupSize(group: EventPartyGroup): number {
-  return (group.tank ? 1 : 0) + (group.healer ? 1 : 0) + group.dps.length;
+  return group.members.filter((m) => m != null).length;
 }
 
 export function isGroupEmpty(group: EventPartyGroup): boolean {
-  return !group.tank && !group.healer && group.dps.length === 0;
+  return group.members.every((m) => !m);
 }
 
 export function groupHasBL(group: EventPartyGroup): boolean {
-  if (group.tank?.hasBloodlust || group.healer?.hasBloodlust) return true;
-  return group.dps.some((d) => d.hasBloodlust);
+  return group.members.some((m) => m?.hasBloodlust);
 }
 
 export function groupHasRez(group: EventPartyGroup): boolean {
-  if (group.tank?.hasBattleRez || group.healer?.hasBattleRez) return true;
-  return group.dps.some((d) => d.hasBattleRez);
+  return group.members.some((m) => m?.hasBattleRez);
 }
 
 export function assignedParticipantIds(groups: EventPartyGroup[]): Set<string> {
   const ids = new Set<string>();
   for (const group of groups) {
-    if (group.tank) ids.add(group.tank.id);
-    if (group.healer) ids.add(group.healer.id);
-    for (const d of group.dps) ids.add(d.id);
+    for (const m of group.members) {
+      if (m) ids.add(m.id);
+    }
   }
   return ids;
 }

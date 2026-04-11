@@ -26,12 +26,6 @@ type AdminUnassignedParticipantsPanelProps = {
   handleDropToUnassigned: PartyDragDropApi['handleDropToUnassigned'];
 };
 
-function getRoleSlot(role: string): 'tank' | 'healer' | 'dps' {
-  if (role === 'tank') return 'tank';
-  if (role === 'healer') return 'healer';
-  return 'dps';
-}
-
 export function AdminUnassignedParticipantsPanel({
   tEv,
   unassignedParticipants,
@@ -74,10 +68,8 @@ export function AdminUnassignedParticipantsPanel({
             const isDropTarget =
               dragOverParticipant === participant.id &&
               draggedItem?.participant.id !== participant.id;
-            const slot = getRoleSlot(participant.role);
             const canSwap =
               draggedItem &&
-              draggedItem.slot === slot &&
               draggedItem.participant.id !== participant.id;
             const RoleIcon =
               participant.role === 'tank'
@@ -101,7 +93,7 @@ export function AdminUnassignedParticipantsPanel({
                 key={participant.id}
                 draggable
                 onDragStart={(e) =>
-                  handleDragStart(e, participant, 'unassigned', slot)
+                  handleDragStart(e, participant, 'unassigned', 0)
                 }
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => {

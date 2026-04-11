@@ -83,11 +83,9 @@ export function PlayerVisiblePartySections({
                     partyGroupContainsCharacterId(group, viewerCharacterId);
                   const stats = getPartyGroupAggregateStats(group);
                   const comp = getPartyGroupCompositionStatus(group);
-                  const members = [
-                    group.tank,
-                    group.healer,
-                    ...group.dps,
-                  ].filter((m): m is EventParticipant => m != null);
+                  const members = group.members.filter(
+                    (m): m is EventParticipant => m != null,
+                  );
 
                   return (
                     <div
@@ -166,38 +164,16 @@ export function PlayerVisiblePartySections({
                       <div className="overflow-x-auto">
                         <table className="w-full table-fixed">
                           <tbody>
-                            {group.tank ? (
+                            {members.map((m) => (
                               <PlayerRosterTableRow
-                                key={`t-${group.tank.id}`}
-                                participant={group.tank}
-                                isViewer={group.tank.id === viewerSid}
+                                key={m.id}
+                                participant={m}
+                                isViewer={m.id === viewerSid}
                                 classColors={classColors}
                                 tEv={tEv}
                                 showRole
                               />
-                            ) : null}
-                            {group.healer ? (
-                              <PlayerRosterTableRow
-                                key={`h-${group.healer.id}`}
-                                participant={group.healer}
-                                isViewer={group.healer.id === viewerSid}
-                                classColors={classColors}
-                                tEv={tEv}
-                                showRole
-                              />
-                            ) : null}
-                            {group.dps.map((dps) =>
-                              dps ? (
-                                <PlayerRosterTableRow
-                                  key={dps.id}
-                                  participant={dps}
-                                  isViewer={dps.id === viewerSid}
-                                  classColors={classColors}
-                                  tEv={tEv}
-                                  showRole
-                                />
-                              ) : null,
-                            )}
+                            ))}
                           </tbody>
                         </table>
                       </div>
