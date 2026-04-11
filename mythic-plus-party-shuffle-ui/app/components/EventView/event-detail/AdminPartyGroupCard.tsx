@@ -260,7 +260,9 @@ function AdminPartyGroupDpsRows({
           dragOverParticipant === dps.id &&
           draggedItem?.participant.id !== dps.id;
         const canDpsSwap =
-          draggedItem && draggedItem.participant.id !== dps.id;
+          draggedItem &&
+          draggedItem.slot === 'dps' &&
+          draggedItem.participant.id !== dps.id;
 
         return (
           <div

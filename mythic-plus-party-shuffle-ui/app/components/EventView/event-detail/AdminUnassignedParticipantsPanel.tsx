@@ -77,6 +77,7 @@ export function AdminUnassignedParticipantsPanel({
             const slot = getRoleSlot(participant.role);
             const canSwap =
               draggedItem &&
+              draggedItem.slot === slot &&
               draggedItem.participant.id !== participant.id;
             const RoleIcon =
               participant.role === 'tank'
