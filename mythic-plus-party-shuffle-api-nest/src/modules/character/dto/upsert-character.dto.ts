@@ -1,6 +1,6 @@
 // src/modules/character/dto/upsert-character.dto.ts
 import { IsOptional, IsNumber, IsString, IsEnum, Min, Max } from 'class-validator';
-import { CharacterClass, Specialization } from '../../../../generated/prisma/client';
+import { CharacterClass, Specialization } from '@prisma/client';
 
 export class UpsertCharacterDto {
   @IsOptional()

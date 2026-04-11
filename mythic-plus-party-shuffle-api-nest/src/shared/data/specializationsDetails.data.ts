@@ -1,4 +1,4 @@
-import { Role, Specialization } from '../../../generated/prisma/client';
+import { Role, Specialization } from '@prisma/client';
 
 // Mapping des spécialisations avec leurs rôles, Bloodlust et Battle Rez
 export const SpecializationDetails: { [key in Specialization]: { role: Role; bloodLust: boolean; battleRez: boolean } } = {

@@ -20,7 +20,7 @@ import {
   import { CharacterService } from './character.service';
   import { WebSocketService } from '../../shared/websocket/websocket.service';
   import { CreateCharacterDto, UpdateCharacterDto, DeleteCharactersDto } from './dto';
-  import { Specialization } from '../../../generated/prisma/client';
+  import { Specialization } from '@prisma/client';
 import { UpsertCharacterDto } from './dto/upsert-character.dto';
 
 // Pipe qui désactive la validation globale pour cette route

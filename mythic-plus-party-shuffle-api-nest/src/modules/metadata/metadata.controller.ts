@@ -1,7 +1,7 @@
 import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
 import { SpecializationDetails } from '../../shared/data/specializationsDetails.data';
 import { CharacterClassDetails } from '../../shared/data/characterClassDetails.data';
-import { CharacterClass, Specialization } from '../../../generated/prisma/client';
+import { CharacterClass, Specialization } from '@prisma/client';
 
 @Controller('api/metadata')
 export class MetadataController {

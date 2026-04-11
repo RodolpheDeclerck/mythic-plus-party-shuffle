@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { UpdateUserDto } from './dto';
-import { Prisma } from '../../../generated/prisma/client';
+import { Prisma } from '@prisma/client';
 
 const userPublicSelect = {
   id: true,

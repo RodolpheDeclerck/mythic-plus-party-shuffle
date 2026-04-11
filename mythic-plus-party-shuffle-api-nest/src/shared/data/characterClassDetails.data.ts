@@ -1,4 +1,4 @@
-import { CharacterClass, Specialization } from '../../../generated/prisma/client';
+import { CharacterClass, Specialization } from '@prisma/client';
 
 export const CharacterClassDetails: { [key in CharacterClass]: { specializations: Specialization[] } } = {
   

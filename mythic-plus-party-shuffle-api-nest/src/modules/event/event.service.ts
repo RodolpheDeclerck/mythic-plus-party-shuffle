@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../shared/prisma/prisma.service';
-import { Prisma } from '../../../generated/prisma/client';
+import { Prisma } from '@prisma/client';
 import { CreateEventDto, UpdateEventDto } from './dto';
 
 /** Default relations to include when querying events. */

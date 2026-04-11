@@ -1,5 +1,5 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import type { Character } from '../../../generated/prisma/client';
+import type { Character } from '@prisma/client';
 import { Party } from '../../shared/entities/party.entity';
 import { SpecializationDetails } from '../../shared/data/specializationsDetails.data';
 import { Redis } from 'ioredis';
