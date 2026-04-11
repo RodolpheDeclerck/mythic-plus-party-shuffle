@@ -72,11 +72,6 @@ export function usePartyDragDrop(
 
       const { participant, fromGroupId, slot: fromSlot } = draggedItem;
 
-      if (fromSlot !== toSlot) {
-        setDraggedItem(null);
-        return;
-      }
-
       if (fromGroupId === toGroupId && !targetParticipantId) {
         setDraggedItem(null);
         return;
@@ -91,6 +86,7 @@ export function usePartyDragDrop(
         const toGroup = newGroups.find((g) => g.id === toGroupId);
         if (!toGroup) return prevGroups;
 
+        /* ---- unassigned → group ---- */
         if (fromGroupId === 'unassigned') {
           if (toSlot === 'tank') {
             if (toGroup.tank && targetParticipantId === toGroup.tank.id) {
@@ -125,42 +121,92 @@ export function usePartyDragDrop(
           return newGroups;
         }
 
+        /* ---- group → group (same or cross-role) ---- */
         const fromGroup = newGroups.find((g) => g.id === fromGroupId);
         if (!fromGroup) return prevGroups;
 
-        if (fromSlot === 'tank') {
-          const temp = toGroup.tank;
-          toGroup.tank = fromGroup.tank;
-          fromGroup.tank = temp;
-        } else if (fromSlot === 'healer') {
-          const temp = toGroup.healer;
-          toGroup.healer = fromGroup.healer;
-          fromGroup.healer = temp;
-        } else if (fromSlot === 'dps') {
-          const fromIndex = fromGroup.dps.findIndex(
-            (d) => d.id === participant.id,
-          );
-          if (fromIndex === -1) return prevGroups;
+        const fromDpsIndex =
+          fromSlot === 'dps'
+            ? fromGroup.dps.findIndex((d) => d.id === participant.id)
+            : -1;
+        if (fromSlot === 'dps' && fromDpsIndex === -1) return prevGroups;
 
-          if (targetParticipantId) {
-            const toIndex = toGroup.dps.findIndex(
+        // Identify displaced participant in target slot
+        let displaced: EventParticipant | null = null;
+        let displacedDpsIndex = -1;
+        if (targetParticipantId) {
+          if (
+            toSlot === 'tank' &&
+            toGroup.tank?.id === targetParticipantId
+          ) {
+            displaced = toGroup.tank;
+          } else if (
+            toSlot === 'healer' &&
+            toGroup.healer?.id === targetParticipantId
+          ) {
+            displaced = toGroup.healer;
+          } else if (toSlot === 'dps') {
+            displacedDpsIndex = toGroup.dps.findIndex(
               (d) => d.id === targetParticipantId,
             );
-            if (toIndex !== -1) {
-              const temp = toGroup.dps[toIndex];
-              toGroup.dps[toIndex] = fromGroup.dps[fromIndex];
-              fromGroup.dps[fromIndex] = temp;
-              return newGroups;
-            }
+            if (displacedDpsIndex !== -1)
+              displaced = toGroup.dps[displacedDpsIndex];
           }
+        }
 
+        // Check capacity for non-swap moves into DPS
+        if (toSlot === 'dps' && !displaced) {
           const toGroupSize = getGroupSize(toGroup);
-          if (toGroupSize >= 5) {
+          if (fromGroupId !== toGroupId && toGroupSize >= 5) return prevGroups;
+        }
+
+        // Check target slot is available for tank/healer (when no swap)
+        if ((toSlot === 'tank' || toSlot === 'healer') && !displaced) {
+          const occupant =
+            toSlot === 'tank' ? toGroup.tank : toGroup.healer;
+          if (occupant && occupant.id !== participant.id) return prevGroups;
+        }
+
+        const sameGroup = fromGroupId === toGroupId;
+
+        if (sameGroup) {
+          // Same-group swap: write directly by index to preserve DPS order
+          if (displaced) {
+            // Place dragged in target slot
+            if (toSlot === 'tank') fromGroup.tank = participant;
+            else if (toSlot === 'healer') fromGroup.healer = participant;
+            else fromGroup.dps[displacedDpsIndex] = participant;
+
+            // Place displaced in source slot
+            if (fromSlot === 'tank') fromGroup.tank = displaced;
+            else if (fromSlot === 'healer') fromGroup.healer = displaced;
+            else fromGroup.dps[fromDpsIndex] = displaced;
+          } else {
             return prevGroups;
           }
+        } else {
+          // Different-group swap
+          // 1. Remove dragged from source
+          if (fromSlot === 'tank') fromGroup.tank = null;
+          else if (fromSlot === 'healer') fromGroup.healer = null;
+          else fromGroup.dps.splice(fromDpsIndex, 1);
 
-          const [movedDps] = fromGroup.dps.splice(fromIndex, 1);
-          toGroup.dps.push(movedDps);
+          // 2. Swap displaced to source slot
+          if (displaced) {
+            if (toSlot === 'tank') toGroup.tank = null;
+            else if (toSlot === 'healer') toGroup.healer = null;
+            else if (displacedDpsIndex !== -1)
+              toGroup.dps.splice(displacedDpsIndex, 1);
+
+            if (fromSlot === 'tank') fromGroup.tank = displaced;
+            else if (fromSlot === 'healer') fromGroup.healer = displaced;
+            else fromGroup.dps.push(displaced);
+          }
+
+          // 3. Place dragged in target slot
+          if (toSlot === 'tank') toGroup.tank = participant;
+          else if (toSlot === 'healer') toGroup.healer = participant;
+          else toGroup.dps.push(participant);
         }
 
         return newGroups;
@@ -208,16 +254,6 @@ export function usePartyDragDrop(
             (p) => p.id === targetParticipantId && !assigned.has(p.id),
           );
           if (targetParticipant) {
-            const targetSlot =
-              targetParticipant.role === 'tank'
-                ? 'tank'
-                : targetParticipant.role === 'healer'
-                  ? 'healer'
-                  : 'dps';
-            if (targetSlot !== fromSlot) {
-              return prevGroups;
-            }
-
             if (fromSlot === 'tank') {
               fromGroup.tank = targetParticipant;
             } else if (fromSlot === 'healer') {

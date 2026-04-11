@@ -63,9 +63,7 @@ export function GroupParticipantSlot({
     dragOverParticipant === participant?.id &&
     draggedItem?.participant.id !== participant?.id;
   const canSwap =
-    draggedItem &&
-    draggedItem.slot === slot &&
-    draggedItem.participant.id !== participant?.id;
+    draggedItem && draggedItem.participant.id !== participant?.id;
 
   if (!participant) {
     return (
