@@ -1,19 +1,12 @@
 'use client';
 
-import type { DragEvent, ElementType } from 'react';
-import { Crosshair, GripVertical, Heart, Shield, Sword, User } from 'lucide-react';
+import type { DragEvent } from 'react';
+import { GripVertical, User } from 'lucide-react';
 import { BloodlustIcon, BattleRezIcon } from '@/components/EventView/wow-icons';
 import type { EventParticipant } from '@/components/EventView/eventPartyModel';
 import { wowClassTextColors } from '@/components/EventView/eventClassColors';
-import { adminGroupIlvlBadgeClass } from './partyGroupUtils';
+import { adminGroupIlvlBadgeClass, playerGroupRoleIcons } from './partyGroupUtils';
 import type { DraggedPartyItem } from './usePartyDragDrop';
-
-function participantSlotIcon(p: EventParticipant) {
-  if (p.role === 'tank') return { Icon: Shield, color: 'text-blue-400' };
-  if (p.role === 'healer') return { Icon: Heart, color: 'text-green-400' };
-  if (p.role === 'meleeDps') return { Icon: Sword, color: 'text-red-400' };
-  return { Icon: Crosshair, color: 'text-orange-400' };
-}
 
 export function GroupParticipantSlot({
   participant,
@@ -28,6 +21,7 @@ export function GroupParticipantSlot({
   onDragOver,
   onDragLeave,
   onDrop,
+  onEdit,
 }: {
   participant: EventParticipant | null;
   groupId: string;
@@ -51,6 +45,7 @@ export function GroupParticipantSlot({
     slotIndex: number,
     targetPid?: string,
   ) => void;
+  onEdit?: (p: EventParticipant) => void;
 }) {
   const isDragging = draggedItem?.participant.id === participant?.id;
   const isDropTarget =
@@ -75,12 +70,13 @@ export function GroupParticipantSlot({
     );
   }
 
-  const { Icon: ParticipantIcon, color: participantIconColor } =
-    participantSlotIcon(participant);
+  const { icon: ParticipantIcon, color: participantIconColor } =
+    playerGroupRoleIcons[participant.role];
 
   return (
     <div
       draggable={isAdmin}
+      onDoubleClick={isAdmin && onEdit ? () => onEdit(participant) : undefined}
       onDragStart={(e) => onDragStart(e, participant, groupId, slotIndex)}
       onDragEnd={onDragEnd}
       onDragOver={(e) => {

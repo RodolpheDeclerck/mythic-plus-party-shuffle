@@ -164,16 +164,73 @@ export function PlayerVisiblePartySections({
                       <div className="overflow-x-auto">
                         <table className="w-full table-fixed">
                           <tbody>
-                            {members.map((m) => (
-                              <PlayerRosterTableRow
-                                key={m.id}
-                                participant={m}
-                                isViewer={m.id === viewerSid}
-                                classColors={classColors}
-                                tEv={tEv}
-                                showRole
-                              />
-                            ))}
+                            {(() => {
+                              const missingRoles: {
+                                label: string;
+                                Icon: typeof Shield;
+                                color: string;
+                              }[] = [];
+                              if (comp.missingTank)
+                                missingRoles.push({
+                                  label: 'Tank',
+                                  Icon: Shield,
+                                  color: 'text-blue-400',
+                                });
+                              if (comp.missingHealer)
+                                missingRoles.push({
+                                  label: 'Healer',
+                                  Icon: Heart,
+                                  color: 'text-green-400',
+                                });
+                              for (
+                                let i = 0;
+                                i < comp.missingDps;
+                                i++
+                              )
+                                missingRoles.push({
+                                  label: 'DPS',
+                                  Icon: Sword,
+                                  color: 'text-red-400',
+                                });
+                              let missingIdx = 0;
+                              return group.members.map((m, idx) =>
+                                m ? (
+                                  <PlayerRosterTableRow
+                                    key={m.id}
+                                    participant={m}
+                                    isViewer={m.id === viewerSid}
+                                    classColors={classColors}
+                                    tEv={tEv}
+                                    showRole
+                                  />
+                                ) : (
+                                  <tr
+                                    key={`empty-${idx}`}
+                                    className="border-b border-purple-500/10"
+                                  >
+                                    <td
+                                      colSpan={6}
+                                      className="px-4 py-2 text-sm italic text-muted-foreground/40"
+                                    >
+                                      {(() => {
+                                        const role =
+                                          missingRoles[missingIdx++];
+                                        if (!role) return null;
+                                        const { Icon, color, label } = role;
+                                        return (
+                                          <span className="flex items-center gap-2">
+                                            <Icon
+                                              className={`h-4 w-4 ${color}`}
+                                            />
+                                            {label}
+                                          </span>
+                                        );
+                                      })()}
+                                    </td>
+                                  </tr>
+                                ),
+                              );
+                            })()}
                           </tbody>
                         </table>
                       </div>

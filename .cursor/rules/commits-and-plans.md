@@ -44,4 +44,30 @@ Quand le changement **modifie le comportement**, la **config**, le **déploiemen
 
 **Pas obligatoire** pour : typo, refactor interne sans effet visible, correction de test seul.
 
+## Tests
+
+Chaque PR qui ajoute ou modifie du comportement **doit** inclure des tests unitaires couvrant les changements :
+
+- **Nouvelles fonctions / hooks** : tests couvrant les cas nominaux, les cas limites et les cas d'erreur.
+- **Fonctions modifiées** : mettre à jour les tests existants pour refléter le nouveau comportement ; ajouter des cas pour les nouveaux chemins de code.
+- **Convention** : utiliser le pattern existant (Jest, factories inline, `describe`/`it`, pas de `test()`).
+- **Vérifier** que tous les tests passent (`npx jest`) avant de créer le commit.
+
+## Index des plans (`docs/plans/README.md`)
+
+Quand un nouveau plan est ajouté dans `docs/plans/` :
+
+- **Ajouter une ligne** dans le tableau de [`docs/plans/README.md`](../../docs/plans/README.md) avec le numéro, le lien et le sujet.
+- Utiliser le **numéro séquentiel suivant** (ex. `05`, `06`, …).
+
+## Checklist PR
+
+Avant de finaliser une PR, vérifier que **tous** les éléments suivants sont à jour dans le même commit (ou la même branche) :
+
+1. **Tests** : ajoutés/mis à jour, tous passent.
+2. **Plan** : fichier `docs/plans/NN-*.md` créé si changement non trivial.
+3. **Index des plans** : `docs/plans/README.md` mis à jour.
+4. **Architecture** : [`ARCHITECTURE.md`](../../mythic-plus-party-shuffle-ui/ARCHITECTURE.md) mis à jour si les flux ou le modèle de données changent.
+5. **README** : mis à jour si la config, le déploiement ou le comportement visible changent.
+
 Référence humaine : [docs/COMMITS.md](../../docs/COMMITS.md).

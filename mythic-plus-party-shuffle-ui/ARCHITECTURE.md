@@ -49,5 +49,6 @@ Character load failures use `CHARACTERS_FETCH_FAILED`; visible copy goes through
 ## Related files
 
 - [`EventDetail.tsx`](app/components/EventView/EventDetail.tsx) — admin / player UI.
-- [`eventPartyModel.ts`](app/components/EventView/eventPartyModel.ts) — party data model.
+- [`eventPartyModel.ts`](app/components/EventView/eventPartyModel.ts) — party data model. `EventPartyGroup` uses a flat `members: (EventParticipant | null)[]` array of 5 generic slots (no role-typed slots). Roles are tracked per participant, not per slot position.
+- [`useSyncedPartyGroups.ts`](app/components/EventView/event-detail/useSyncedPartyGroups.ts) — keeps generated groups in sync with backend parties and edited characters. Preserves the role assigned at shuffle time; admin can explicitly push role changes via `updateParticipantInGroups`.
 - [`app/services/api.ts`](app/services/api.ts) — shared HTTP calls.

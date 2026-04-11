@@ -78,7 +78,7 @@ export function EventDetail({
     [characters, specLabel],
   );
 
-  const { shuffledGroups, setShuffledGroups } = useSyncedPartyGroups({
+  const { shuffledGroups, setShuffledGroups, updateParticipantInGroups } = useSyncedPartyGroups({
     parties,
     characters,
     isAdmin,
@@ -100,12 +100,14 @@ export function EventDetail({
 
   const dialogs = useEventDetailDialogsAndActions({
     eventCode,
+    isAdmin,
     onShuffle,
     onSaveParticipant,
     onDeleteParticipant,
     onClearAllCharacters,
     onClearParties,
     onViewerLeaveEvent,
+    onAfterSaveParticipant: updateParticipantInGroups,
   });
 
   const roleCategories = useMemo(
@@ -149,7 +151,11 @@ export function EventDetail({
         shufflePending={shufflePending}
         onAddParticipant={dialogs.handleAddParticipant}
         onClearParticipantsOpen={() => dialogs.setClearParticipantsOpen(true)}
-        onShuffle={dialogs.handleShuffle}
+        onShuffle={
+          shuffledGroups.length > 0
+            ? () => dialogs.setShuffleConfirmOpen(true)
+            : dialogs.handleShuffle
+        }
         viewerParticipant={viewerParticipant}
         onEditParticipant={dialogs.handleEditParticipant}
         onLeaveOpen={() => dialogs.setLeaveConfirmOpen(true)}
@@ -173,6 +179,7 @@ export function EventDetail({
           onToggleVisibility={onToggleVisibility}
           onClearGroupsOpen={() => dialogs.setClearGroupsOpen(true)}
           onShuffle={dialogs.handleShuffle}
+          onEditParticipant={dialogs.handleEditParticipant}
           drag={drag}
         />
       ) : null}
@@ -205,13 +212,25 @@ export function EventDetail({
         open={dialogs.clearParticipantsOpen}
         onOpenChange={dialogs.setClearParticipantsOpen}
         type="participants"
-        onConfirm={() => void dialogs.onClearAllCharacters()}
+        onConfirm={async () => {
+          await dialogs.onClearParties();
+          await dialogs.onClearAllCharacters();
+        }}
       />
       <ClearConfirmDialog
         open={dialogs.clearGroupsOpen}
         onOpenChange={dialogs.setClearGroupsOpen}
         type="groups"
         onConfirm={() => void dialogs.onClearParties()}
+      />
+      <ClearConfirmDialog
+        open={dialogs.shuffleConfirmOpen}
+        onOpenChange={dialogs.setShuffleConfirmOpen}
+        type="groups"
+        onConfirm={async () => {
+          await dialogs.onClearParties();
+          dialogs.handleShuffle();
+        }}
       />
 
       <EditParticipantDialog

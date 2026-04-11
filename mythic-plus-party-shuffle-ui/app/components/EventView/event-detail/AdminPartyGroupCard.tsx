@@ -11,7 +11,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BloodlustIcon, BattleRezIcon } from '@/components/EventView/wow-icons';
-import type { EventPartyGroup } from '@/components/EventView/eventPartyModel';
+import type {
+  EventParticipant,
+  EventPartyGroup,
+} from '@/components/EventView/eventPartyModel';
 import {
   getPartyGroupAggregateStats,
   getPartyGroupCompositionStatus,
@@ -24,6 +27,7 @@ type AdminPartyGroupCardProps = {
   group: EventPartyGroup;
   groupNumber: number;
   tEv: (key: string) => string;
+  onEditParticipant?: (p: EventParticipant) => void;
   drag: Pick<
     PartyDragDropApi,
     | 'draggedItem'
@@ -42,6 +46,7 @@ export function AdminPartyGroupCard({
   group,
   groupNumber,
   tEv,
+  onEditParticipant,
   drag,
 }: AdminPartyGroupCardProps) {
   const {
@@ -169,6 +174,7 @@ export function AdminPartyGroupCard({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onEdit={onEditParticipant}
           />
         ))}
       </div>

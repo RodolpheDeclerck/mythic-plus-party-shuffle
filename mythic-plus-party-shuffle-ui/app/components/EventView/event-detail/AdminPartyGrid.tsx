@@ -18,6 +18,7 @@ type AdminPartyGridProps = {
   onToggleVisibility: () => void | Promise<void>;
   onClearGroupsOpen: () => void;
   onShuffle: () => void;
+  onEditParticipant?: (p: EventParticipant) => void;
   drag: PartyDragDropApi;
 };
 
@@ -30,6 +31,7 @@ export function AdminPartyGrid({
   onToggleVisibility,
   onClearGroupsOpen,
   onShuffle,
+  onEditParticipant,
   drag,
 }: AdminPartyGridProps) {
   const {
@@ -87,6 +89,7 @@ export function AdminPartyGrid({
               group={group}
               groupNumber={groupNumber}
               tEv={tEv}
+              onEditParticipant={onEditParticipant}
               drag={groupCardDrag}
             />
           );
@@ -104,6 +107,7 @@ export function AdminPartyGrid({
         handleDragStart={handleDragStart}
         handleDragEnd={handleDragEnd}
         handleDropToUnassigned={handleDropToUnassigned}
+        onEditParticipant={onEditParticipant}
       />
     </div>
   );
