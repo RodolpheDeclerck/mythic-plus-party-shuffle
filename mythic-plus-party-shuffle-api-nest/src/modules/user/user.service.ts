@@ -1,52 +1,67 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../../shared/entities/user.entity';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import { UpdateUserDto } from './dto';
+import { Prisma } from '../../../generated/prisma/client';
+
+const userPublicSelect = {
+  id: true,
+  email: true,
+  username: true,
+} satisfies Prisma.UserSelect;
+
+const userWithPasswordSelect = {
+  ...userPublicSelect,
+  password: true,
+  salt: true,
+} satisfies Prisma.UserSelect;
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async getUsers(): Promise<User[]> {
-    return await this.userRepository.find({
-      select: ['id', 'email', 'username'], // Exclure password et salt
+  async getUsers() {
+    return await this.prisma.user.findMany({
+      select: userPublicSelect,
     });
   }
 
-  async getUserById(id: number): Promise<User | null> {
-    return await this.userRepository.findOne({
+  async getUserById(id: number) {
+    return await this.prisma.user.findUnique({
       where: { id },
-      select: ['id', 'email', 'username'],
+      select: userPublicSelect,
     });
   }
 
-  async getUserByEmail(email: string): Promise<User | null> {
-    return await this.userRepository.findOne({
+  async getUserByEmail(email: string) {
+    return await this.prisma.user.findUnique({
       where: { email },
-      select: ['id', 'email', 'username', 'password', 'salt'],
+      select: userWithPasswordSelect,
     });
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: { username: updateUserDto.username },
+        select: userPublicSelect,
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new NotFoundException('User not found');
+      }
+      throw e;
     }
-
-    user.username = updateUserDto.username;
-    return await this.userRepository.save(user);
   }
 
   async deleteUser(id: number): Promise<void> {
-    const result = await this.userRepository.delete(id);
-    
-    if (result.affected === 0) {
-      throw new NotFoundException('User not found');
+    try {
+      await this.prisma.user.delete({ where: { id } });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new NotFoundException('User not found');
+      }
+      throw e;
     }
   }
 }

@@ -1,11 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Inject } from '@nestjs/common';
-import { Character } from '../../shared/entities/character.entity';
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import type { Character } from '../../../generated/prisma/client';
 import { Party } from '../../shared/entities/party.entity';
 import { SpecializationDetails } from '../../shared/data/specializationsDetails.data';
-import { Redis } from 'ioredis'; // ou le type approprié selon votre package Redis
+import { Redis } from 'ioredis';
 
 @Injectable()
 export class PartyService {
@@ -13,9 +10,7 @@ export class PartyService {
   private readonly logger = new Logger(PartyService.name);
 
   constructor(
-    @InjectRepository(Character)
-    private characterRepository: Repository<Character>,
-    @Inject('REDIS_CLIENT') // Ajustez selon votre configuration Redis
+    @Inject('REDIS_CLIENT')
     private redisClient: Redis,
   ) {}
 

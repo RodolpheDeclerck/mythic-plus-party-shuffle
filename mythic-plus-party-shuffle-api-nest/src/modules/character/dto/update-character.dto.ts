@@ -1,6 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsNumber, Min, Max } from 'class-validator';
-import { CharacterClass } from '../../../shared/enums/characterClass.enum';
-import { Specialization } from '../../../shared/enums/specialization.enum';
+import { CharacterClass, Specialization } from '../../../../generated/prisma/client';
 
 export class UpdateCharacterDto {
   @IsString()

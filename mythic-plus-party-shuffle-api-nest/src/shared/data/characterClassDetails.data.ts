@@ -1,5 +1,4 @@
-import { CharacterClass } from '../enums/characterClass.enum';
-import { Specialization } from '../enums/specialization.enum';
+import { CharacterClass, Specialization } from '../../../generated/prisma/client';
 
 export const CharacterClassDetails: { [key in CharacterClass]: { specializations: Specialization[] } } = {
   
@@ -76,7 +75,7 @@ export const CharacterClassDetails: { [key in CharacterClass]: { specializations
     ],
   },
 
-  [CharacterClass.DemonHunter]: {
+  [CharacterClass.Demon_Hunter]: {
     specializations: [
       Specialization.DemonHunter_Havoc,
       Specialization.DemonHunter_Devourer,

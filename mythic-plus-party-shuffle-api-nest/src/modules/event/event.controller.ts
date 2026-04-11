@@ -23,7 +23,6 @@ import { EventAdminGuard } from './guards/event-admin.guard';
 import { PartyFacade } from '../../shared/facade/party.facade';
 import { PartyService } from '../party/party.service';
 import { WebSocketService } from '../../shared/websocket/websocket.service';
-import { AppEvent } from '../../shared/entities/event.entity';
 
 @Controller('api/events')
 export class EventController {
@@ -37,12 +36,9 @@ export class EventController {
   ) {}
 
   /**
-   * Helper method to map TypeORM entity to plain object
-   * Ensures arePartiesVisible is always included and properly serialized
-   * Also includes 'visible' alias for frontend compatibility
+   * Map event to a plain response object with frontend-compatible fields.
    */
-  private mapEventToResponse(event: AppEvent): any {
-    // Créer un objet plain JavaScript pour éviter les problèmes de sérialisation avec TypeORM
+  private mapEventToResponse(event: any): any {
     const arePartiesVisibleValue = Boolean(event.arePartiesVisible ?? false);
     
     // Créer un objet simple avec toutes les propriétés primitives d'abord
@@ -57,7 +53,7 @@ export class EventController {
       visible: arePartiesVisibleValue, // Alias pour le frontend (compatibilité) - IMPORTANT!
     };
     
-    // Ajouter les relations seulement si elles existent (pour éviter les références circulaires)
+    // Include relations if loaded
     if (event.createdBy) {
       response.createdBy = {
         id: event.createdBy.id,

@@ -1,7 +1,7 @@
-import { User } from '../../shared/entities/user.entity';
+import 'express';
 
 declare module 'express' {
-  export interface Request {
+  interface Request {
     user?: {
       id: number;
       email: string;

@@ -1,17 +1,14 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { User } from '../../shared/entities/user.entity';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto';
 import { PasswordHashingService } from './password-hashing.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
     private passwordHashingService: PasswordHashingService,
@@ -20,9 +17,9 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
-    const user = await this.userRepository.findOne({
+    const user = await this.prisma.user.findUnique({
       where: { email },
-      select: ['id', 'email', 'username', 'password', 'salt'],
+      select: { id: true, email: true, username: true, password: true, salt: true },
     });
 
     if (!user) {
@@ -35,9 +32,10 @@ export class AuthService {
     }
 
     if (check.upgrade) {
-      user.password = check.upgrade.password;
-      user.salt = check.upgrade.salt;
-      await this.userRepository.save(user);
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { password: check.upgrade.password, salt: check.upgrade.salt },
+      });
     }
 
     const token = this.generateToken(user);
@@ -56,7 +54,7 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const { email, password, username } = registerDto;
 
-    const existingUser = await this.userRepository.findOne({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
 
@@ -66,14 +64,15 @@ export class AuthService {
 
     const { password: hashedPassword, salt } = await this.passwordHashingService.hashPassword(password);
 
-    const newUser = this.userRepository.create({
-      email,
-      username,
-      salt,
-      password: hashedPassword,
+    const newUser = await this.prisma.user.create({
+      data: {
+        email,
+        username,
+        salt,
+        password: hashedPassword,
+      },
+      select: { id: true, email: true, username: true },
     });
-
-    await this.userRepository.save(newUser);
 
     const token = this.generateToken(newUser);
 
@@ -109,16 +108,14 @@ export class AuthService {
     }
   }
 
-  async validateUser(userId: number): Promise<User | null> {
-    const user = await this.userRepository.findOne({
+  async validateUser(userId: number) {
+    return await this.prisma.user.findUnique({
       where: { id: userId },
-      select: ['id', 'email', 'username'],
+      select: { id: true, email: true, username: true },
     });
-
-    return user || null;
   }
 
-  private generateToken(user: User): string {
+  private generateToken(user: { id: number; email: string }): string {
     const jwtSecret = this.configService.get<string>('jwt.secret');
     if (!jwtSecret) {
       throw new Error('JWT_SECRET is not defined');
@@ -133,7 +130,7 @@ export class AuthService {
 
     return this.jwtService.sign(payload, {
       secret: jwtSecret,
-      expiresIn: expiresIn as any, // ← Cast pour éviter l'erreur de type
+      expiresIn: expiresIn as any,
     });
   }
 }

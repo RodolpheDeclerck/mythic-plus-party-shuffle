@@ -13,6 +13,7 @@ Every PR that adds or modifies behavior **must** include:
 3. **Plans index** — add a row in `docs/plans/README.md`.
 4. **Architecture** — update `mythic-plus-party-shuffle-ui/ARCHITECTURE.md` if data models, hooks, or app flows change.
 5. **README** — update the relevant README if config, deployment, or visible behavior changes.
+6. **Pre-PR cleanup** — before committing, verify: no dead imports, no stale comments referencing removed code/patterns, no orphan files, no unused dependencies.
 
 ## Commits
 
@@ -36,12 +37,12 @@ Every PR that adds or modifies behavior **must** include:
 ## Stack technique
 
 - **Frontend** : Next.js (App Router), TypeScript, Socket.IO client
-- **Backend** : NestJS, TypeORM, PostgreSQL, Redis (ioredis), Socket.IO
+- **Backend** : NestJS, Prisma, PostgreSQL, Redis (ioredis), Socket.IO
 - **Proxy API** : `app/api/be/[[...path]]/route.ts` — tout le trafic UI passe par ce reverse proxy vers `http://localhost:8080` (ou `BACKEND_URL`)
 
 ## Architecture Rules — NEVER VIOLATE
 
-1. **`synchronize: false` — always.** Schema changes go through SQL migrations in `migrations/`. Never let TypeORM auto-sync the schema.
+1. **Schema changes via Prisma Migrate only.** Run `npx prisma migrate dev` to create migrations. Never edit the database schema manually.
 2. **`Party` is NOT a SQL entity.** The `Party` model is an application model serialized as JSON in Redis (`party:{eventCode}`). Never create a SQL table for parties.
 3. **Use `PartyFacade` for shuffle.** `EventModule` uses `PartyFacade` (`shared/facade/party.facade.ts`) — never call `PartyService` directly from `EventModule`.
 4. **Fixed routes before parameterized routes in NestJS controllers.** E.g., `/api/characters` before `/api/characters/:id`.
