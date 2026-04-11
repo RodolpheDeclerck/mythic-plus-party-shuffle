@@ -1,16 +1,10 @@
 'use client';
 
-import {
-  Crosshair,
-  GripVertical,
-  Heart,
-  Shield,
-  Sword,
-  Users,
-} from 'lucide-react';
+import { GripVertical, Users } from 'lucide-react';
 import { BloodlustIcon, BattleRezIcon } from '@/components/EventView/wow-icons';
 import type { EventParticipant } from '@/components/EventView/eventPartyModel';
 import { wowClassTextColors } from '@/components/EventView/eventClassColors';
+import { playerGroupRoleIcons } from './partyGroupUtils';
 import type { PartyDragDropApi } from './usePartyDragDrop';
 
 type AdminUnassignedParticipantsPanelProps = {
@@ -24,6 +18,7 @@ type AdminUnassignedParticipantsPanelProps = {
   handleDragStart: PartyDragDropApi['handleDragStart'];
   handleDragEnd: PartyDragDropApi['handleDragEnd'];
   handleDropToUnassigned: PartyDragDropApi['handleDropToUnassigned'];
+  onEditParticipant?: (p: EventParticipant) => void;
 };
 
 export function AdminUnassignedParticipantsPanel({
@@ -37,6 +32,7 @@ export function AdminUnassignedParticipantsPanel({
   handleDragStart,
   handleDragEnd,
   handleDropToUnassigned,
+  onEditParticipant,
 }: AdminUnassignedParticipantsPanelProps) {
   return (
     <div
@@ -71,27 +67,18 @@ export function AdminUnassignedParticipantsPanel({
             const canSwap =
               draggedItem &&
               draggedItem.participant.id !== participant.id;
-            const RoleIcon =
-              participant.role === 'tank'
-                ? Shield
-                : participant.role === 'healer'
-                  ? Heart
-                  : participant.role === 'meleeDps'
-                    ? Sword
-                    : Crosshair;
-            const roleColor =
-              participant.role === 'tank'
-                ? 'text-blue-400'
-                : participant.role === 'healer'
-                  ? 'text-green-400'
-                  : participant.role === 'meleeDps'
-                    ? 'text-red-400'
-                    : 'text-orange-400';
+            const { icon: RoleIcon, color: roleColor } =
+              playerGroupRoleIcons[participant.role];
 
             return (
               <div
                 key={participant.id}
                 draggable
+                onDoubleClick={
+                  onEditParticipant
+                    ? () => onEditParticipant(participant)
+                    : undefined
+                }
                 onDragStart={(e) =>
                   handleDragStart(e, participant, 'unassigned', 0)
                 }

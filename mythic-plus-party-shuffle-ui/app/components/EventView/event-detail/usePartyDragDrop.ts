@@ -87,10 +87,15 @@ export function usePartyDragDrop(
         const toGroup = newGroups.find((g) => g.id === toGroupId);
         if (!toGroup) return prevGroups;
 
+        // Bounds check
+        if (toSlotIndex < 0 || toSlotIndex >= toGroup.members.length)
+          return prevGroups;
+
         /* ---- unassigned → group ---- */
         if (fromGroupId === 'unassigned') {
           const existing = toGroup.members[toSlotIndex];
-          if (existing && !targetParticipantId) return prevGroups;
+          if (existing && (!targetParticipantId || existing.id !== targetParticipantId))
+            return prevGroups;
           toGroup.members[toSlotIndex] = participant;
           return newGroups;
         }
@@ -99,15 +104,16 @@ export function usePartyDragDrop(
         const fromGroup = newGroups.find((g) => g.id === fromGroupId);
         if (!fromGroup) return prevGroups;
 
+        if (fromSlotIndex < 0 || fromSlotIndex >= fromGroup.members.length)
+          return prevGroups;
+
         const sameGroup = fromGroupId === toGroupId;
 
         if (sameGroup) {
-          // Swap within same group
           const temp = fromGroup.members[toSlotIndex];
           fromGroup.members[toSlotIndex] = participant;
           fromGroup.members[fromSlotIndex] = temp;
         } else {
-          // Swap between groups
           const displaced = toGroup.members[toSlotIndex];
           toGroup.members[toSlotIndex] = participant;
           fromGroup.members[fromSlotIndex] = displaced;

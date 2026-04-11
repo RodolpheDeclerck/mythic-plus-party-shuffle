@@ -11,22 +11,26 @@ import {
 
 export type UseEventDetailDialogsAndActionsParams = {
   eventCode: string;
+  isAdmin: boolean;
   onShuffle: () => void | Promise<void>;
   onSaveParticipant: (c: Character & { eventCode: string }) => Promise<void>;
   onDeleteParticipant: (id: number) => Promise<void>;
   onClearAllCharacters: () => void | Promise<void>;
   onClearParties: () => void | Promise<void>;
   onViewerLeaveEvent?: () => void | Promise<void>;
+  onAfterSaveParticipant?: (updated: EventParticipant) => void;
 };
 
 export function useEventDetailDialogsAndActions({
   eventCode,
+  isAdmin,
   onShuffle,
   onSaveParticipant,
   onDeleteParticipant,
   onClearAllCharacters,
   onClearParties,
   onViewerLeaveEvent,
+  onAfterSaveParticipant,
 }: UseEventDetailDialogsAndActionsParams) {
   const [codeCopied, setCodeCopied] = useState(false);
   const [editingParticipant, setEditingParticipant] =
@@ -36,6 +40,7 @@ export function useEventDetailDialogsAndActions({
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
   const [clearParticipantsOpen, setClearParticipantsOpen] = useState(false);
   const [clearGroupsOpen, setClearGroupsOpen] = useState(false);
+  const [shuffleConfirmOpen, setShuffleConfirmOpen] = useState(false);
 
   const copyCode = useCallback(() => {
     void navigator.clipboard.writeText(eventCode);
@@ -64,8 +69,11 @@ export function useEventDetailDialogsAndActions({
       await onSaveParticipant(
         eventParticipantToCharacterForUpsert(updatedParticipant, eventCode),
       );
+      if (isAdmin && onAfterSaveParticipant) {
+        onAfterSaveParticipant(updatedParticipant);
+      }
     },
-    [eventCode, onSaveParticipant],
+    [eventCode, isAdmin, onSaveParticipant, onAfterSaveParticipant],
   );
 
   const handleDeleteParticipantFromDialog = useCallback(
@@ -87,6 +95,8 @@ export function useEventDetailDialogsAndActions({
     setClearParticipantsOpen,
     clearGroupsOpen,
     setClearGroupsOpen,
+    shuffleConfirmOpen,
+    setShuffleConfirmOpen,
     editingParticipant,
     editDialogOpen,
     setEditDialogOpen,
