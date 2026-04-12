@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAccessToken } from '@auth0/nextjs-auth0';
 
 /** Node runtime so `Headers#getSetCookie()` is available (multiple Set-Cookie). */
 export const runtime = 'nodejs';
 
 const FORWARD_REQUEST_HEADERS = [
-  'cookie',
-  'authorization',
   'content-type',
   'accept',
   'accept-language',
@@ -32,7 +31,7 @@ function buildUpstreamUrl(
   return `${base}${pathSuffix}${search}`;
 }
 
-function buildForwardHeaders(request: NextRequest): Headers {
+async function buildForwardHeaders(request: NextRequest): Promise<Headers> {
   const out = new Headers();
   for (const name of FORWARD_REQUEST_HEADERS) {
     const v = request.headers.get(name);
@@ -40,24 +39,18 @@ function buildForwardHeaders(request: NextRequest): Headers {
       out.set(name, v);
     }
   }
-  return out;
-}
 
-function appendSetCookies(
-  from: Headers,
-  to: NextResponse,
-): void {
-  const multi = from.getSetCookie?.();
-  if (multi && multi.length > 0) {
-    for (const c of multi) {
-      to.headers.append('Set-Cookie', c);
+  // Inject Auth0 access token as Bearer header
+  try {
+    const { accessToken } = await getAccessToken();
+    if (accessToken) {
+      out.set('Authorization', `Bearer ${accessToken}`);
     }
-    return;
+  } catch {
+    // Not authenticated — forward without token
   }
-  const single = from.get('set-cookie');
-  if (single) {
-    to.headers.append('Set-Cookie', single);
-  }
+
+  return out;
 }
 
 async function proxy(
@@ -66,7 +59,7 @@ async function proxy(
   method: string,
 ): Promise<NextResponse> {
   const url = buildUpstreamUrl(pathSegments, request.nextUrl.search);
-  const forwardHeaders = buildForwardHeaders(request);
+  const forwardHeaders = await buildForwardHeaders(request);
 
   const hasBody = !['GET', 'HEAD', 'OPTIONS'].includes(method);
   const init: RequestInit = {
@@ -97,8 +90,6 @@ async function proxy(
   if (cacheControl) {
     res.headers.set('Cache-Control', cacheControl);
   }
-
-  appendSetCookies(upstream.headers, res);
 
   return res;
 }

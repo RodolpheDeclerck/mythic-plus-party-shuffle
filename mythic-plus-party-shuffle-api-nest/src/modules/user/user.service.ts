@@ -9,12 +9,6 @@ const userPublicSelect = {
   username: true,
 } satisfies Prisma.UserSelect;
 
-const userWithPasswordSelect = {
-  ...userPublicSelect,
-  password: true,
-  salt: true,
-} satisfies Prisma.UserSelect;
-
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
@@ -29,13 +23,6 @@ export class UserService {
     return await this.prisma.user.findUnique({
       where: { id },
       select: userPublicSelect,
-    });
-  }
-
-  async getUserByEmail(email: string) {
-    return await this.prisma.user.findUnique({
-      where: { email },
-      select: userWithPasswordSelect,
     });
   }
 

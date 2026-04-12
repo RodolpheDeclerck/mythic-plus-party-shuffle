@@ -2,10 +2,15 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
+import { passportJwtSecret } from 'jwks-rsa';
 import { AuthService } from '../auth.service';
 
-type JwtPayload = { id?: number; email?: string };
+interface Auth0JwtPayload {
+  sub?: string;
+  email?: string;
+  nickname?: string;
+  name?: string;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -15,38 +20,40 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     private authService: AuthService,
   ) {
+    const issuer = configService.get<string>('auth.issuerBaseUrl');
+
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => request?.cookies?.session ?? null,
-        (request: Request) => {
-          const authHeader = request?.headers?.authorization;
-          if (authHeader && authHeader.startsWith('Bearer ')) {
-            return authHeader.substring(7);
-          }
-          return null;
-        },
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ]),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret'),
+      secretOrKeyProvider: passportJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: `${issuer}.well-known/jwks.json`,
+      }),
+      issuer,
+      audience: configService.get<string>('auth.audience'),
+      algorithms: ['RS256'],
     });
   }
 
-  async validate(payload: JwtPayload) {
-    if (!payload?.id) {
-      this.logger.warn('Invalid JWT payload: missing subject id');
+  async validate(payload: Auth0JwtPayload) {
+    if (!payload?.sub) {
+      this.logger.warn('Invalid JWT payload: missing sub');
       throw new UnauthorizedException('Invalid token payload');
     }
 
-    const user = await this.authService.validateUser(payload.id);
+    const username = payload.nickname || payload.name || payload.sub;
+    const email = payload.email || `${payload.sub}@oidc.local`;
 
-    if (!user) {
-      this.logger.warn(`JWT referenced user id not found: ${payload.id}`);
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.authService.findOrCreateByOidcSub(
+      payload.sub,
+      email,
+      username,
+    );
 
     if (this.configService.get<string>('nodeEnv') === 'development') {
-      this.logger.debug(`JWT validated for user id ${user.id}`);
+      this.logger.debug(`JWT validated for user id ${user.id} (sub: ${payload.sub})`);
     }
 
     return {

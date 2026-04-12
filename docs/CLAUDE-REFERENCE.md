@@ -12,7 +12,7 @@ AppModule
 ├── PrismaModule (global, PostgreSQL via Prisma)
 ├── RedisModule (global, REDIS_CLIENT)
 ├── WebSocketModule (gateway + WebSocketService)
-├── AuthModule (JWT + Passport + RateLimitService)
+├── AuthModule (Auth0 OIDC via Passport + RateLimitService)
 ├── UserModule
 ├── CharacterModule (depends: WebSocketModule, PartyModule)
 ├── EventModule (depends: PartyModule, WebSocketModule, PartyFacade)
@@ -35,7 +35,8 @@ AppModule
 ## Prisma Models (`prisma/schema.prisma`)
 
 ### `User` (`users`)
-- Sensitive fields excluded via `select` in queries: `password`, `salt`, `sessionToken`
+- `oidcSub`: Auth0/OIDC subject identifier (unique), used for user lookup on login
+- `password`, `salt`: nullable (legacy, unused with Auth0)
 - Relations: `eventsCreated` (1-n Event), `adminOf` (1-n EventAdmin)
 
 ### `Event` (`events`)
@@ -74,8 +75,8 @@ AppModule
 
 | Route | Module |
 |-------|--------|
-| `POST /auth/login`, `/auth/register`, `/auth/logout` | AuthModule |
-| `GET /auth/me`, `/auth/verify-token` | AuthModule |
+| `GET /auth/me` | AuthModule (protected) |
+| `POST /auth/logout` | AuthModule |
 | `GET/PATCH/DELETE /api/users/:id` | UserModule |
 | `GET/POST /api/events` | EventModule |
 | `GET/PUT/DELETE /api/events/:eventCode` | EventModule |

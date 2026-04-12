@@ -136,52 +136,11 @@
     "logout": "Déconnexion"
   },
   "login": {
-    "heroEyebrow": "Bon retour",
-    "subtitle": "Organisez votre groupe. Mélangez vos rôles. Conquérez le donjon.",
-    "email": "E-mail",
-    "emailPlaceholder": "vous@exemple.com",
-    "password": "Mot de passe",
-    "passwordPlaceholder": "Entrez votre mot de passe",
-    "forgotPassword": "Mot de passe oublié ?",
-    "rememberMe": "Se souvenir de moi sur cet appareil",
-    "showPassword": "Afficher le mot de passe",
-    "hidePassword": "Masquer le mot de passe",
-    "signIn": "Se connecter",
-    "signingIn": "Connexion…",
-    "noAccount": "Pas encore de compte ?",
-    "createAccount": "Créer un compte",
-    "agreementText": "En vous connectant, vous acceptez nos",
-    "joinWithCode": "Rejoindre avec un code d'événement",
-    "errorInvalidCredentials": "Échec de la connexion. Vérifiez votre e-mail et votre mot de passe."
-  },
-  "register": {
-    "heroEyebrow": "Rejoignez l'aventure",
-    "subtitle": "Créez votre compte pour organiser des runs et des shuffles de groupe.",
-    "emailLabel": "E-mail",
-    "emailPlaceholder": "vous@exemple.com",
-    "username": "Nom d'utilisateur",
-    "usernamePlaceholder": "VotreBattleTag",
-    "passwordLabel": "Mot de passe",
-    "passwordPlaceholder": "Créez un mot de passe solide",
-    "confirmPasswordLabel": "Confirmer le mot de passe",
-    "confirmPasswordPlaceholder": "Confirmez votre mot de passe",
-    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
-    "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
-    "usernameTooShort": "Le nom d'utilisateur doit contenir au moins 3 caractères.",
-    "mustAcceptTerms": "Veuillez accepter les conditions et la politique de confidentialité.",
-    "acceptTerms": "J'accepte les <termsLink>conditions d'utilisation</termsLink> et la <privacyLink>politique de confidentialité</privacyLink>.",
-    "passwordStrength": {
-      "level0": "Trop faible — allongez et variez les caractères",
-      "level1": "Faible",
-      "level2": "Moyen",
-      "level3": "Bon",
-      "level4": "Fort"
-    },
-    "submit": "Créer un compte",
-    "submitting": "Création du compte…",
-    "hasAccount": "Vous avez déjà un compte ?",
-    "signIn": "Se connecter",
-    "errorGeneric": "L'inscription a échoué. Veuillez réessayer."
+    "heroEyebrow": "Bienvenue",
+    "subtitle": "Connectez-vous avec votre compte Battle.net pour organiser vos groupes.",
+    "battlenetButton": "Se connecter avec Battle.net",
+    "redirecting": "Redirection vers Battle.net…",
+    "joinWithCode": "Rejoindre avec un code d'événement"
   },
   "dashboard": {
     "eyebrow": "Tableau de bord",
@@ -211,11 +170,6 @@
     "backDashboard": "Retour au tableau de bord",
     "errorGeneric": "Impossible de créer l'événement. Réessayez.",
     "checkingAuth": "Vérification de la session…"
-  },
-  "forgotPasswordPage": {
-    "title": "Mot de passe oublié",
-    "body": "La réinitialisation du mot de passe n'est pas encore disponible dans l'application. Contactez l'organisateur de l'événement ou reconnectez-vous si vous vous souvenez de votre mot de passe.",
-    "backToLogin": "Retour à la connexion"
   },
   "eventDetail": {
     "backToDashboard": "Retour au tableau de bord",

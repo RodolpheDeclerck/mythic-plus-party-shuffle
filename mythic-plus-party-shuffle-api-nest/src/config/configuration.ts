@@ -2,7 +2,7 @@ export default () => ({
     // Configuration du serveur
     port: parseInt(process.env.PORT, 10) || 8080,
     nodeEnv: process.env.NODE_ENV || 'development',
-    
+
     // Configuration de la base de données PostgreSQL
     database: {
       type: 'postgres' as const,
@@ -12,7 +12,7 @@ export default () => ({
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
     },
-    
+
     // Configuration Redis
     redis: {
       url: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -29,18 +29,18 @@ export default () => ({
         windowSec: parseInt(process.env.AUTH_REGISTER_RL_WINDOW_SEC || '3600', 10),
       },
     },
-    
-    // Configuration JWT
-    jwt: {
-      secret: process.env.JWT_SECRET || 'yourSecretKey',
-      expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+
+    // OIDC / Auth0 configuration (provider-agnostic)
+    auth: {
+      issuerBaseUrl: process.env.AUTH_ISSUER_BASE_URL,
+      audience: process.env.AUTH_AUDIENCE,
     },
-    
+
     // Configuration CORS
     cors: {
       origin: process.env.CORS_ORIGIN,
     },
-    
+
     // Configuration du domaine (pour les cookies)
     domain: process.env.DOMAIN,
   });
