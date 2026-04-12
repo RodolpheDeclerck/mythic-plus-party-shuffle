@@ -10,7 +10,7 @@ import useAuthCheck from '@/hooks/useAuthCheck';
 
 export function EventPageToolbar() {
   const { t } = useTranslation();
-  const { isAuthenticated, isAuthChecked, handleLogout } = useAuthCheck();
+  const { isAuthenticated, isAuthChecked, handleLogout, username } = useAuthCheck();
 
   return (
     <div className="fixed right-4 top-4 z-50 flex flex-nowrap items-center justify-end gap-2 sm:gap-3">
@@ -20,10 +20,13 @@ export function EventPageToolbar() {
       {isAuthChecked ? (
         isAuthenticated ? (
           <div className="flex shrink-0 flex-nowrap items-center gap-2">
-            <div className="flex items-center gap-1.5 rounded-lg border border-purple-500/20 bg-purple-900/30 px-3 py-1.5 text-sm text-muted-foreground">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1.5 rounded-lg border border-purple-500/20 bg-purple-900/30 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-purple-500/40 hover:text-purple-300"
+            >
               <User className="h-3.5 w-3.5 shrink-0" />
-              <span>{t('common.account')}</span>
-            </div>
+              <span>{username || t('common.account')}</span>
+            </Link>
             <Button
               type="button"
               variant="ghost"

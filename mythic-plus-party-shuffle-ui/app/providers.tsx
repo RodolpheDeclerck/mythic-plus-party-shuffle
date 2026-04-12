@@ -4,6 +4,7 @@ import './lib/axiosAuth';
 import React, { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { UserProvider } from '@auth0/nextjs-auth0/client';
 import { AuthProvider } from './context/AuthContext';
 import { ClassesProvider } from './context/ClassesContext';
 import { SpecializationsProvider } from './context/SpecializationsContext';
@@ -24,14 +25,16 @@ function I18nStoredLanguageSync() {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <I18nStoredLanguageSync />
-      <I18nHtmlLangSync />
-      <ClassesProvider>
-        <SpecializationsProvider>
-          <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-        </SpecializationsProvider>
-      </ClassesProvider>
-    </AuthProvider>
+    <UserProvider>
+      <AuthProvider>
+        <I18nStoredLanguageSync />
+        <I18nHtmlLangSync />
+        <ClassesProvider>
+          <SpecializationsProvider>
+            <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+          </SpecializationsProvider>
+        </ClassesProvider>
+      </AuthProvider>
+    </UserProvider>
   );
 }

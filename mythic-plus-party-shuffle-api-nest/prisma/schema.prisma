@@ -91,9 +91,9 @@ model User {
   id           Int     @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(autoincrement())
   username     String  @unique(map: "UQ_fe0bb3f6520ee0469504521e710") @db.VarChar(255)
   email        String  @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.VarChar(255)
-  password     String  @db.VarChar
-  salt         String  @db.VarChar
-  sessionToken String? @db.VarChar
+  oidcSub      String? @unique @db.VarChar(255)
+  password     String? @db.VarChar
+  salt         String? @db.VarChar
 
   eventsCreated Event[]      @relation("EventCreator")
   adminOf       EventAdmin[]

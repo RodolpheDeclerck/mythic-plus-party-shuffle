@@ -119,15 +119,6 @@ const JoinEventForm = () => {
         </Link>
       </p>
 
-      <p className="text-center text-sm text-muted-foreground">
-        {t('login.noAccount')}{' '}
-        <Link
-          href="/register"
-          className="font-medium text-cyan-400 underline-offset-4 hover:text-cyan-300 hover:underline focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--rift-void)]"
-        >
-          {t('login.createAccount')}
-        </Link>
-      </p>
     </form>
   );
 };

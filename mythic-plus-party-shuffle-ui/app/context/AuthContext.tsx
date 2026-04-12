@@ -1,12 +1,12 @@
 'use client';
 
-import React, { createContext, useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import apiUrl from '@/config/apiConfig';
+import React, { createContext, useCallback } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export interface AuthContextType {
   isAuthenticated: boolean | null;
   isAuthChecked: boolean;
+  username: string | null;
   setIsAuthenticated: (value: boolean) => void;
   setIsAuthChecked: (value: boolean) => void;
   handleLogout: () => void;
@@ -20,51 +20,30 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const { user, isLoading, checkSession } = useUser();
+
+  const isAuthenticated = isLoading ? null : !!user;
+  const isAuthChecked = !isLoading;
+  const username = user?.nickname ?? user?.name ?? null;
+
+  const handleLogout = () => {
+    window.location.href = '/api/auth/logout';
+  };
 
   const checkAuth = useCallback(async () => {
-    try {
-      const response = await axios.post<{ isAuthenticated: boolean }>(
-        `${apiUrl}/auth/verify-token`,
-        {},
-      );
-      setIsAuthenticated(response.data.isAuthenticated);
-    } catch {
-      setIsAuthenticated(false);
-    } finally {
-      setIsAuthChecked(true);
-    }
-  }, []);
+    await checkSession();
+  }, [checkSession]);
 
-  useEffect(() => {
-    if (!isAuthChecked) {
-      void checkAuth();
-    }
-  }, [isAuthChecked, checkAuth]);
-
-  const handleLogout = async () => {
-    try {
-      await axios.post(`${apiUrl}/auth/logout`, {});
-    } catch {
-      /* still clear client state if network fails */
-    }
-    try {
-      localStorage.removeItem('authToken');
-    } catch {
-      /* ignore */
-    }
-    setIsAuthenticated(false);
-    window.location.href = '/login';
-  };
+  const noop = () => {};
 
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated,
         isAuthChecked,
-        setIsAuthenticated,
-        setIsAuthChecked,
+        username,
+        setIsAuthenticated: noop,
+        setIsAuthChecked: noop,
         handleLogout,
         checkAuth,
       }}
