@@ -4,6 +4,15 @@
 
 Communicate in **French** with the user. Code, comments, and commit messages in **English**.
 
+## Multi-PC Workflow
+
+L'utilisateur travaille sur ce projet depuis **plusieurs PC différents**. Conséquences à toujours prendre en compte :
+
+- **Mémoire Claude Code locale** (`~/.claude/projects/.../memory/`) : ne pas supposer qu'une mémoire écrite sur une machine existe ailleurs. Les règles importantes doivent vivre dans ce `CLAUDE.md` (versionné) et non dans la mémoire locale.
+- **Settings Claude** : privilégier `.claude/settings.json` (versionné) plutôt que `.claude/settings.local.json` pour toute config qui doit être partagée entre PC.
+- **État local non versionné** : `.env`, `node_modules`, DB locale Postgres/Redis, builds, worktrees, branches locales peuvent différer d'un PC à l'autre. Vérifier leur existence avant de s'appuyer dessus.
+- **Avant de référencer un état "précédent"** (fichier local, branche, mémoire), vérifier qu'il est présent sur la machine actuelle.
+
 ## PR Checklist
 
 Every PR that adds or modifies behavior **must** include:
