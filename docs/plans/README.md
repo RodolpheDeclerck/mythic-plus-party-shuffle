@@ -11,6 +11,7 @@ Index des plans versionnés avec le code. **Convention de nom :** `NN-titre-en-k
 | 05 | [05-generic-party-slots.md](05-generic-party-slots.md) | Slots de groupe generiques, drag & drop cross-role, double-clic edit, sync roles |
 | 06 | [06-typeorm-to-prisma.md](06-typeorm-to-prisma.md) | Migration TypeORM → Prisma (schema, services, enums, cleanup) |
 | 07 | [07-auth0-battlenet-migration.md](07-auth0-battlenet-migration.md) | Auth0 + Battle.net OAuth, suppression auth custom |
+| 08 | [08-rename-demon-hunter-enum.md](08-rename-demon-hunter-enum.md) | Renommer enum SQL `Demon Hunter` → `DemonHunter`, fix création + couleur DH |
 
 **Nouveau plan :** utiliser le numéro suivant (ex. `05-nom-du-plan.md`) et ajouter une ligne dans ce tableau.
 

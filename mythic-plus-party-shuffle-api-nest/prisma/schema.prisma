@@ -21,7 +21,7 @@ enum CharacterClass {
   Druid
   Rogue
   Hunter
-  Demon_Hunter @map("Demon Hunter")
+  DemonHunter
   Warlock
   Evoker
   Shaman

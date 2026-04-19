@@ -75,7 +75,7 @@ export const CharacterClassDetails: { [key in CharacterClass]: { specializations
     ],
   },
 
-  [CharacterClass.Demon_Hunter]: {
+  [CharacterClass.DemonHunter]: {
     specializations: [
       Specialization.DemonHunter_Havoc,
       Specialization.DemonHunter_Devourer,
