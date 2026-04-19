@@ -68,6 +68,8 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+On Render, the service uses `npm run render-start`, which runs `prisma migrate deploy` before starting the app so pending migrations are always applied on each deploy.
+
 ## Run tests
 
 ```bash
