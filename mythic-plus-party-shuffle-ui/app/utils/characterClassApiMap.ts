@@ -1,12 +1,15 @@
 /**
- * PostgreSQL / Nest enum uses `Deathknight`; WoW UI usually shows `Death Knight`.
+ * PostgreSQL / Nest enums use compact identifiers (`Deathknight`, `DemonHunter`);
+ * the WoW UI uses spaced labels (`Death Knight`, `Demon Hunter`).
  */
 const DISPLAY_TO_API: Record<string, string> = {
   'Death Knight': 'Deathknight',
+  'Demon Hunter': 'DemonHunter',
 };
 
 const API_TO_DISPLAY: Record<string, string> = {
   Deathknight: 'Death Knight',
+  DemonHunter: 'Demon Hunter',
 };
 
 export function toApiCharacterClass(className: string): string {
