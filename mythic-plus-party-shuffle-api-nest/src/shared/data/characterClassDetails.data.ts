@@ -1,7 +1,8 @@
 import { CharacterClass, Specialization } from '@prisma/client';
 
-export const CharacterClassDetails: { [key in CharacterClass]: { specializations: Specialization[] } } = {
-  
+export const CharacterClassDetails: {
+  [key in CharacterClass]: { specializations: Specialization[] };
+} = {
   [CharacterClass.Warrior]: {
     specializations: [
       Specialization.Warrior_Arms,

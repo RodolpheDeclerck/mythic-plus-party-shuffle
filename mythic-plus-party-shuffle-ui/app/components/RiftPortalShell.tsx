@@ -3,10 +3,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { loginBackgroundImageStyle } from '@/config/loginBackground';
-import {
-  riftAuthGradientBorder,
-  riftVoidFill95,
-} from '@/lib/riftUi';
+import { riftAuthGradientBorder, riftVoidFill95 } from '@/lib/riftUi';
 
 export {
   riftAuthGradientBorder,

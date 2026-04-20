@@ -4,9 +4,7 @@ import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Character } from '@/types/Character';
 import type { Party } from '@/types/Party';
-import {
-  characterToEventParticipant,
-} from './eventPartyModel';
+import { characterToEventParticipant } from './eventPartyModel';
 import { wowClassTextColors } from './eventClassColors';
 import { EditParticipantDialog } from './EditParticipantDialog';
 import { ClearConfirmDialog } from './ClearConfirmDialog';
@@ -78,13 +76,14 @@ export function EventDetail({
     [characters, specLabel],
   );
 
-  const { shuffledGroups, setShuffledGroups, updateParticipantInGroups } = useSyncedPartyGroups({
-    parties,
-    characters,
-    isAdmin,
-    specLabel,
-    onPartiesUpdate,
-  });
+  const { shuffledGroups, setShuffledGroups, updateParticipantInGroups } =
+    useSyncedPartyGroups({
+      parties,
+      characters,
+      isAdmin,
+      specLabel,
+      onPartiesUpdate,
+    });
 
   const groupsToRender = useMemo(() => {
     if (isAdmin) return shuffledGroups;

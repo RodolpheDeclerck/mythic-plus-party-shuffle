@@ -14,8 +14,9 @@ export class SocketIOAdapter extends IoAdapter {
   }
 
   createIOServer(port: number, options?: ServerOptions): any {
-    const corsOrigin = this.configService.get<string>('cors.origin') || 'http://localhost:3000';
-    
+    const corsOrigin =
+      this.configService.get<string>('cors.origin') || 'http://localhost:3000';
+
     // Fusionner les options existantes avec notre configuration CORS
     // Les options du décorateur @WebSocketGateway sont passées ici via options
     const serverOptions: ServerOptions = {
@@ -56,8 +57,7 @@ export class SocketIOAdapter extends IoAdapter {
     const server = super.createIOServer(port, serverOptions);
 
     socketIoAdapterLogger.log('Socket.IO server created');
-    
+
     return server;
   }
 }
-

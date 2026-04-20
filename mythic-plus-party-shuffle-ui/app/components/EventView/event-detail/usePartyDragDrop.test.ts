@@ -49,7 +49,10 @@ const fakeEvent = (overrides: Partial<React.DragEvent> = {}) =>
 /*  Helper: set up hook with initial groups                            */
 /* ------------------------------------------------------------------ */
 
-function setup(initialGroups: EventPartyGroup[], allParticipants: EventParticipant[] = []) {
+function setup(
+  initialGroups: EventPartyGroup[],
+  allParticipants: EventParticipant[] = [],
+) {
   let groups = initialGroups;
 
   const { result } = renderHook(() =>
@@ -106,8 +109,8 @@ describe('same-group swap', () => {
     });
 
     const members = getGroups()[0].members;
-    expect(members[0]).toBeNull();       // old slot cleared
-    expect(members[3]?.id).toBe('1');    // tank in new slot
+    expect(members[0]).toBeNull(); // old slot cleared
+    expect(members[3]?.id).toBe('1'); // tank in new slot
   });
 });
 

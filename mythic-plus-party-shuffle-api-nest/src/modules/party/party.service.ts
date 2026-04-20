@@ -18,7 +18,10 @@ export class PartyService {
   // MÉTHODES PUBLIQUES
   // ============================================
 
-  async shuffleGroups(characters: Character[], eventCode: string): Promise<Party[]> {
+  async shuffleGroups(
+    characters: Character[],
+    eventCode: string,
+  ): Promise<Party[]> {
     if (characters.length === 0) {
       return [];
     }
@@ -29,11 +32,17 @@ export class PartyService {
 
     characters = this.shuffleArray(characters);
 
-    let { tanks, healers, melees, dists, brs, bls } = this.filterCharactersByRole(characters);
+    const { tanks, healers, melees, dists, brs, bls } =
+      this.filterCharactersByRole(characters);
 
     if (tanks.length === 0 && healers.length === 0) {
       const allDps = [...melees, ...dists];
-      const dpsOnlyParties = this.createBalancedDpsOnlyGroups(allDps, brs, bls, partiesHistory);
+      const dpsOnlyParties = this.createBalancedDpsOnlyGroups(
+        allDps,
+        brs,
+        bls,
+        partiesHistory,
+      );
       this.checkGroupQuality(dpsOnlyParties);
       return dpsOnlyParties;
     }
@@ -42,7 +51,7 @@ export class PartyService {
       1,
       tanks.length,
       healers.length,
-      Math.ceil(characters.length / 5)
+      Math.ceil(characters.length / 5),
     );
 
     for (let i = 0; i < numberOfParties; i++) {
@@ -54,7 +63,7 @@ export class PartyService {
     const availableParties = [...parties];
     this.shuffleArray(availableParties);
 
-    tanks.forEach(tank => {
+    tanks.forEach((tank) => {
       if (availableParties.length > 0) {
         const party = availableParties.pop()!;
         party.members.push(tank);
@@ -69,11 +78,14 @@ export class PartyService {
 
     this.shuffleArray(parties);
 
-    healers.forEach(healer => {
+    healers.forEach((healer) => {
       if (!usedCharacters.has(healer.id)) {
-        const eligibleParties = parties.filter(p => !p.members.some(m => m.role === 'HEAL'));
+        const eligibleParties = parties.filter(
+          (p) => !p.members.some((m) => m.role === 'HEAL'),
+        );
         if (eligibleParties.length > 0) {
-          const randomParty = eligibleParties[Math.floor(Math.random() * eligibleParties.length)];
+          const randomParty =
+            eligibleParties[Math.floor(Math.random() * eligibleParties.length)];
           randomParty.members.push(healer);
           usedCharacters.add(healer.id);
         } else {
@@ -92,10 +104,16 @@ export class PartyService {
 
     this.shuffleArray(parties);
 
-    this.addignDistAndMelees(dists, melees, parties, usedCharacters, partiesHistory);
+    this.addignDistAndMelees(
+      dists,
+      melees,
+      parties,
+      usedCharacters,
+      partiesHistory,
+    );
 
     let unusedDps: Character[] = [];
-    [...dists, ...melees].forEach(dps => {
+    [...dists, ...melees].forEach((dps) => {
       if (!usedCharacters.has(dps.id)) {
         unusedDps.push(dps);
       }
@@ -111,11 +129,17 @@ export class PartyService {
     this.optimizeGlobalDistribution(parties, partiesHistory);
     this.logger.debug('Global party distribution optimization done');
 
-    const allAssignedPlayers = new Set(parties.flatMap(p => p.members.map(m => m.id)));
-    const unassignedPlayers = characters.filter(c => !allAssignedPlayers.has(c.id));
-    
+    const allAssignedPlayers = new Set(
+      parties.flatMap((p) => p.members.map((m) => m.id)),
+    );
+    const unassignedPlayers = characters.filter(
+      (c) => !allAssignedPlayers.has(c.id),
+    );
+
     if (unassignedPlayers.length > 0) {
-      this.logger.debug(`Distributing ${unassignedPlayers.length} unassigned players`);
+      this.logger.debug(
+        `Distributing ${unassignedPlayers.length} unassigned players`,
+      );
       this.distributeUnassignedPlayers(unassignedPlayers, parties);
     }
 
@@ -125,15 +149,23 @@ export class PartyService {
   }
 
   async getLastThreeShuffles(eventCode: string): Promise<Party[][]> {
-    const partiesJson = await this.redisClient.get(`${this.shuffleHistoryKey}:${eventCode}`);
+    const partiesJson = await this.redisClient.get(
+      `${this.shuffleHistoryKey}:${eventCode}`,
+    );
     return partiesJson ? JSON.parse(partiesJson).slice(-3) : [];
   }
 
-  async saveShuffleToHistory(eventCode: string, parties: Party[]): Promise<void> {
+  async saveShuffleToHistory(
+    eventCode: string,
+    parties: Party[],
+  ): Promise<void> {
     const history = await this.getLastThreeShuffles(eventCode);
     history.push(parties);
     if (history.length > 3) history.shift();
-    await this.redisClient.set(`${this.shuffleHistoryKey}:${eventCode}`, JSON.stringify(history));
+    await this.redisClient.set(
+      `${this.shuffleHistoryKey}:${eventCode}`,
+      JSON.stringify(history),
+    );
   }
 
   async getPartiesByEventCode(eventCode: string): Promise<Party[]> {
@@ -149,17 +181,25 @@ export class PartyService {
 
   async saveGroupsToRedis(parties: Party[], eventCode: string): Promise<void> {
     try {
-      this.logger.debug(`Redis save party:${eventCode} (${parties.length} parties)`);
+      this.logger.debug(
+        `Redis save party:${eventCode} (${parties.length} parties)`,
+      );
       await this.redisClient.set('party:' + eventCode, JSON.stringify(parties));
       this.logger.debug(`Redis write OK party:${eventCode}`);
     } catch (error) {
       const e = error as Error;
-      this.logger.error(`Redis write failed for party:${eventCode}: ${e.message}`, e.stack);
+      this.logger.error(
+        `Redis write failed for party:${eventCode}: ${e.message}`,
+        e.stack,
+      );
     }
   }
 
   async deleteShuffleHistory(eventCode: string): Promise<void> {
-    await this.redisClient.set(`${this.shuffleHistoryKey}:${eventCode}`, JSON.stringify([]));
+    await this.redisClient.set(
+      `${this.shuffleHistoryKey}:${eventCode}`,
+      JSON.stringify([]),
+    );
   }
 
   async deleteGroupsFromRedis(eventCode: string): Promise<void> {
@@ -167,7 +207,10 @@ export class PartyService {
     await this.redisClient.set('party:' + eventCode, JSON.stringify([]));
   }
 
-  async createOrUpdatePartiesToRedis(parties: Party[], eventCode: string): Promise<void> {
+  async createOrUpdatePartiesToRedis(
+    parties: Party[],
+    eventCode: string,
+  ): Promise<void> {
     await this.saveShuffleToHistory(eventCode, parties);
     await this.saveGroupsToRedis(parties, eventCode);
   }
@@ -178,7 +221,9 @@ export class PartyService {
 
   private filterCharactersByRole(characters: Character[]) {
     const tanks = characters
-      .filter(char => SpecializationDetails[char.specialization].role === 'TANK')
+      .filter(
+        (char) => SpecializationDetails[char.specialization].role === 'TANK',
+      )
       .sort((a, b) => {
         const diffA = a.keystoneMaxLevel - a.keystoneMinLevel;
         const diffB = b.keystoneMaxLevel - b.keystoneMinLevel;
@@ -187,11 +232,35 @@ export class PartyService {
         }
         return b.iLevel - a.iLevel;
       });
-    const healers = characters.filter(char => SpecializationDetails[char.specialization].role === 'HEAL').sort((a, b) => b.iLevel - a.iLevel);
-    const melees = characters.filter(char => SpecializationDetails[char.specialization].role === 'CAC').sort((a, b) => b.iLevel - a.iLevel);
-    const dists = characters.filter(char => SpecializationDetails[char.specialization].role === 'DIST').sort((a, b) => b.iLevel - a.iLevel);
-    const brs = characters.filter(char => SpecializationDetails[char.specialization].battleRez === true && char.role !== 'TANK').sort((a, b) => b.iLevel - a.iLevel);
-    const bls = characters.filter(char => SpecializationDetails[char.specialization].bloodLust === true && char.role !== 'TANK').sort((a, b) => b.iLevel - a.iLevel);
+    const healers = characters
+      .filter(
+        (char) => SpecializationDetails[char.specialization].role === 'HEAL',
+      )
+      .sort((a, b) => b.iLevel - a.iLevel);
+    const melees = characters
+      .filter(
+        (char) => SpecializationDetails[char.specialization].role === 'CAC',
+      )
+      .sort((a, b) => b.iLevel - a.iLevel);
+    const dists = characters
+      .filter(
+        (char) => SpecializationDetails[char.specialization].role === 'DIST',
+      )
+      .sort((a, b) => b.iLevel - a.iLevel);
+    const brs = characters
+      .filter(
+        (char) =>
+          SpecializationDetails[char.specialization].battleRez === true &&
+          char.role !== 'TANK',
+      )
+      .sort((a, b) => b.iLevel - a.iLevel);
+    const bls = characters
+      .filter(
+        (char) =>
+          SpecializationDetails[char.specialization].bloodLust === true &&
+          char.role !== 'TANK',
+      )
+      .sort((a, b) => b.iLevel - a.iLevel);
 
     return { tanks, healers, melees, dists, brs, bls };
   }
@@ -205,36 +274,57 @@ export class PartyService {
     return shuffled;
   }
 
-  private assignBRToParties(brs: Character[], parties: Party[], usedCharacters: Set<number>, partiesHistory: Party[][]) {
+  private assignBRToParties(
+    brs: Character[],
+    parties: Party[],
+    usedCharacters: Set<number>,
+    partiesHistory: Party[][],
+  ) {
     let roles = ['HEAL', 'DIST', 'CAC'];
     let brToAdd: Character | null | undefined = null;
 
-    parties.forEach(party => {
+    parties.forEach((party) => {
       if (party.members.length > 0 && !party.members[0].battleRez) {
         if (party.members.length > 0 && party.members[0].role === 'HEAL') {
-          roles = roles.filter(role => role !== 'HEAL');
+          roles = roles.filter((role) => role !== 'HEAL');
         }
 
         while (!brToAdd && roles.length > 0) {
           const randomRole = roles[Math.floor(Math.random() * roles.length)];
           const referenceILevel = party.members[0].iLevel;
 
-          let availableBrs = brs.filter(br => br.role === randomRole && !usedCharacters.has(br.id));
-          let filteredBrs = this.filterEligibleMembers(availableBrs, party, partiesHistory);
+          let availableBrs = brs.filter(
+            (br) => br.role === randomRole && !usedCharacters.has(br.id),
+          );
+          const filteredBrs = this.filterEligibleMembers(
+            availableBrs,
+            party,
+            partiesHistory,
+          );
           availableBrs = filteredBrs.length > 0 ? filteredBrs : availableBrs;
 
-          const filteredKeystoneBrs = availableBrs.sort((a, b) => a.keystoneMinLevel - b.keystoneMinLevel);
+          const filteredKeystoneBrs = availableBrs.sort(
+            (a, b) => a.keystoneMinLevel - b.keystoneMinLevel,
+          );
 
           brToAdd = filteredKeystoneBrs.reduce((closestBr, currentBr) => {
-            const closestKeystoneDiff = closestBr.keystoneMaxLevel - closestBr.keystoneMinLevel;
-            const currentKeystoneDiff = currentBr.keystoneMaxLevel - currentBr.keystoneMinLevel;
+            const closestKeystoneDiff =
+              closestBr.keystoneMaxLevel - closestBr.keystoneMinLevel;
+            const currentKeystoneDiff =
+              currentBr.keystoneMaxLevel - currentBr.keystoneMinLevel;
 
             if (currentKeystoneDiff < closestKeystoneDiff) {
               return currentBr;
             } else if (currentKeystoneDiff === closestKeystoneDiff) {
-              const closestDifference = Math.abs(closestBr.iLevel - referenceILevel);
-              const currentDifference = Math.abs(currentBr.iLevel - referenceILevel);
-              return currentDifference < closestDifference ? currentBr : closestBr;
+              const closestDifference = Math.abs(
+                closestBr.iLevel - referenceILevel,
+              );
+              const currentDifference = Math.abs(
+                currentBr.iLevel - referenceILevel,
+              );
+              return currentDifference < closestDifference
+                ? currentBr
+                : closestBr;
             }
 
             return closestBr;
@@ -245,7 +335,7 @@ export class PartyService {
             usedCharacters.add(brToAdd.id);
             this.logger.debug(`Added BR ${brToAdd.name} to party ${party.id}`);
           } else {
-            roles = roles.filter(role => role !== randomRole);
+            roles = roles.filter((role) => role !== randomRole);
           }
         }
         brToAdd = null;
@@ -254,36 +344,60 @@ export class PartyService {
     });
   }
 
-  private assignBLToParties(bls: Character[], parties: Party[], usedCharacters: Set<number>, partiesHistory: Party[][]) {
+  private assignBLToParties(
+    bls: Character[],
+    parties: Party[],
+    usedCharacters: Set<number>,
+    partiesHistory: Party[][],
+  ) {
     let roles = ['HEAL', 'DIST', 'CAC'];
     let blToAdd: Character | null | undefined = null;
 
-    parties.forEach(party => {
+    parties.forEach((party) => {
       if (party.members.length > 0) {
-        if (party.members.length > 0 && party.members[0].role === 'HEAL' || party.members.length > 1 && party.members[1].role === 'HEAL') {
-          roles = roles.filter(role => role !== 'HEAL');
+        if (
+          (party.members.length > 0 && party.members[0].role === 'HEAL') ||
+          (party.members.length > 1 && party.members[1].role === 'HEAL')
+        ) {
+          roles = roles.filter((role) => role !== 'HEAL');
         }
 
         while (!blToAdd && roles.length > 0) {
           const randomRole = roles[Math.floor(Math.random() * roles.length)];
           const referenceILevel = party.members[0].iLevel;
 
-          let availableBls = bls.filter(bl => bl.role === randomRole && !usedCharacters.has(bl.id));
-          let filteredBls = this.filterEligibleMembers(availableBls, party, partiesHistory);
+          let availableBls = bls.filter(
+            (bl) => bl.role === randomRole && !usedCharacters.has(bl.id),
+          );
+          const filteredBls = this.filterEligibleMembers(
+            availableBls,
+            party,
+            partiesHistory,
+          );
           availableBls = filteredBls.length > 0 ? filteredBls : availableBls;
 
-          const filteredKeystoneBrs = availableBls.sort((a, b) => a.keystoneMinLevel - b.keystoneMinLevel);
+          const filteredKeystoneBrs = availableBls.sort(
+            (a, b) => a.keystoneMinLevel - b.keystoneMinLevel,
+          );
 
           blToAdd = filteredKeystoneBrs.reduce((closestBr, currentBr) => {
-            const closestKeystoneDiff = closestBr.keystoneMaxLevel - closestBr.keystoneMinLevel;
-            const currentKeystoneDiff = currentBr.keystoneMaxLevel - currentBr.keystoneMinLevel;
+            const closestKeystoneDiff =
+              closestBr.keystoneMaxLevel - closestBr.keystoneMinLevel;
+            const currentKeystoneDiff =
+              currentBr.keystoneMaxLevel - currentBr.keystoneMinLevel;
 
             if (currentKeystoneDiff < closestKeystoneDiff) {
               return currentBr;
             } else if (currentKeystoneDiff === closestKeystoneDiff) {
-              const closestDifference = Math.abs(closestBr.iLevel - referenceILevel);
-              const currentDifference = Math.abs(currentBr.iLevel - referenceILevel);
-              return currentDifference < closestDifference ? currentBr : closestBr;
+              const closestDifference = Math.abs(
+                closestBr.iLevel - referenceILevel,
+              );
+              const currentDifference = Math.abs(
+                currentBr.iLevel - referenceILevel,
+              );
+              return currentDifference < closestDifference
+                ? currentBr
+                : closestBr;
             }
 
             return closestBr;
@@ -294,7 +408,7 @@ export class PartyService {
             usedCharacters.add(blToAdd.id);
             this.logger.debug(`Added BL ${blToAdd.name} to party ${party.id}`);
           } else {
-            roles = roles.filter(role => role !== randomRole);
+            roles = roles.filter((role) => role !== randomRole);
           }
         }
         blToAdd = null;
@@ -303,25 +417,51 @@ export class PartyService {
     });
   }
 
-  private addignDistAndMelees(dists: Character[], melees: Character[], parties: Party[], usedCharacters: Set<number>, partiesHistory: Party[][]) {
-    parties.forEach(party => {
-      let filteredMelees = this.filterEligibleMembers(melees, party, partiesHistory);
-      melees = filteredMelees.find(fm => !usedCharacters.has(fm.id)) ? filteredMelees : melees;
+  private addignDistAndMelees(
+    dists: Character[],
+    melees: Character[],
+    parties: Party[],
+    usedCharacters: Set<number>,
+    partiesHistory: Party[][],
+  ) {
+    parties.forEach((party) => {
+      const filteredMelees = this.filterEligibleMembers(
+        melees,
+        party,
+        partiesHistory,
+      );
+      melees = filteredMelees.find((fm) => !usedCharacters.has(fm.id))
+        ? filteredMelees
+        : melees;
 
-      let filteredDists = this.filterEligibleMembers(dists, party, partiesHistory);
-      dists = filteredDists.find(fd => !usedCharacters.has(fd.id)) ? filteredDists : dists;
+      const filteredDists = this.filterEligibleMembers(
+        dists,
+        party,
+        partiesHistory,
+      );
+      dists = filteredDists.find((fd) => !usedCharacters.has(fd.id))
+        ? filteredDists
+        : dists;
 
-      if (!party.members.find(member => member.role === 'CAC')) {
+      if (!party.members.find((member) => member.role === 'CAC')) {
         const meleeToAdd = melees.reduce((bestMelee, currentMelee) => {
-          const bestKeystoneDiff = bestMelee.keystoneMaxLevel - bestMelee.keystoneMinLevel;
-          const currentKeystoneDiff = currentMelee.keystoneMaxLevel - currentMelee.keystoneMinLevel;
+          const bestKeystoneDiff =
+            bestMelee.keystoneMaxLevel - bestMelee.keystoneMinLevel;
+          const currentKeystoneDiff =
+            currentMelee.keystoneMaxLevel - currentMelee.keystoneMinLevel;
 
           if (currentKeystoneDiff < bestKeystoneDiff) {
             return currentMelee;
           } else if (currentKeystoneDiff === bestKeystoneDiff) {
-            const bestDifference = Math.abs(bestMelee.iLevel - party.members[0].iLevel);
-            const currentDifference = Math.abs(currentMelee.iLevel - party.members[0].iLevel);
-            return currentDifference < bestDifference ? currentMelee : bestMelee;
+            const bestDifference = Math.abs(
+              bestMelee.iLevel - party.members[0].iLevel,
+            );
+            const currentDifference = Math.abs(
+              currentMelee.iLevel - party.members[0].iLevel,
+            );
+            return currentDifference < bestDifference
+              ? currentMelee
+              : bestMelee;
           }
 
           return bestMelee;
@@ -330,20 +470,28 @@ export class PartyService {
         if (meleeToAdd && !usedCharacters.has(meleeToAdd.id)) {
           party.members.push(meleeToAdd);
           usedCharacters.add(meleeToAdd.id);
-          this.logger.debug(`Added CAC ${meleeToAdd.name} to party ${party.id}`);
+          this.logger.debug(
+            `Added CAC ${meleeToAdd.name} to party ${party.id}`,
+          );
         }
       }
 
-      if (!party.members.find(member => member.role === 'DIST')) {
+      if (!party.members.find((member) => member.role === 'DIST')) {
         const distToAdd = dists.reduce((bestDist, currentDist) => {
-          const bestKeystoneDiff = bestDist.keystoneMaxLevel - bestDist.keystoneMinLevel;
-          const currentKeystoneDiff = currentDist.keystoneMaxLevel - currentDist.keystoneMinLevel;
+          const bestKeystoneDiff =
+            bestDist.keystoneMaxLevel - bestDist.keystoneMinLevel;
+          const currentKeystoneDiff =
+            currentDist.keystoneMaxLevel - currentDist.keystoneMinLevel;
 
           if (currentKeystoneDiff < bestKeystoneDiff) {
             return currentDist;
           } else if (currentKeystoneDiff === bestKeystoneDiff) {
-            const bestDifference = Math.abs(bestDist.iLevel - party.members[0].iLevel);
-            const currentDifference = Math.abs(currentDist.iLevel - party.members[0].iLevel);
+            const bestDifference = Math.abs(
+              bestDist.iLevel - party.members[0].iLevel,
+            );
+            const currentDifference = Math.abs(
+              currentDist.iLevel - party.members[0].iLevel,
+            );
             return currentDifference < bestDifference ? currentDist : bestDist;
           }
 
@@ -353,20 +501,29 @@ export class PartyService {
         if (distToAdd && !usedCharacters.has(distToAdd.id)) {
           party.members.push(distToAdd);
           usedCharacters.add(distToAdd.id);
-          this.logger.debug(`Added DIST ${distToAdd.name} to party ${party.id}`);
+          this.logger.debug(
+            `Added DIST ${distToAdd.name} to party ${party.id}`,
+          );
         }
       }
     });
   }
 
-  private completePartiesWithRemainingDPS(unusedDps: Character[], parties: Party[]): Character[] {
-    parties.forEach(party => {
+  private completePartiesWithRemainingDPS(
+    unusedDps: Character[],
+    parties: Party[],
+  ): Character[] {
+    parties.forEach((party) => {
       while (this.isDpsAvailable(party) && unusedDps.length > 0) {
-        const partyIlevel = party.members.reduce((sum, member) => sum + member.iLevel, 0) / party.members.length;
+        const partyIlevel =
+          party.members.reduce((sum, member) => sum + member.iLevel, 0) /
+          party.members.length;
 
         const dpsToAdd = unusedDps.reduce((bestDps, currentDps) => {
-          const bestKeystoneDiff = bestDps.keystoneMaxLevel - bestDps.keystoneMinLevel;
-          const currentKeystoneDiff = currentDps.keystoneMaxLevel - currentDps.keystoneMinLevel;
+          const bestKeystoneDiff =
+            bestDps.keystoneMaxLevel - bestDps.keystoneMinLevel;
+          const currentKeystoneDiff =
+            currentDps.keystoneMaxLevel - currentDps.keystoneMinLevel;
 
           if (currentKeystoneDiff < bestKeystoneDiff) {
             return currentDps;
@@ -381,7 +538,7 @@ export class PartyService {
 
         if (dpsToAdd) {
           party.members.push(dpsToAdd);
-          unusedDps = unusedDps.filter(dps => dps.id !== dpsToAdd.id);
+          unusedDps = unusedDps.filter((dps) => dps.id !== dpsToAdd.id);
           this.logger.debug(`Added DPS ${dpsToAdd.name} to party ${party.id}`);
         } else {
           break;
@@ -418,7 +575,7 @@ export class PartyService {
     allDps: Character[],
     brs: Character[],
     bls: Character[],
-    partiesHistory: Party[][]
+    _partiesHistory: Party[][],
   ): Party[] {
     const parties: Party[] = [];
     const usedCharacters = new Set<number>();
@@ -428,37 +585,40 @@ export class PartyService {
       const party = new Party();
       parties.push(party);
 
-      const availableBr = brs.find(br => !usedCharacters.has(br.id));
+      const availableBr = brs.find((br) => !usedCharacters.has(br.id));
       if (availableBr) {
         party.members.push(availableBr);
         usedCharacters.add(availableBr.id);
-        allDps = allDps.filter(dps => dps.id !== availableBr.id);
+        allDps = allDps.filter((dps) => dps.id !== availableBr.id);
       }
 
-      const availableBl = bls.find(bl => !usedCharacters.has(bl.id));
+      const availableBl = bls.find((bl) => !usedCharacters.has(bl.id));
       if (availableBl) {
         party.members.push(availableBl);
         usedCharacters.add(availableBl.id);
-        allDps = allDps.filter(dps => dps.id !== availableBl.id);
+        allDps = allDps.filter((dps) => dps.id !== availableBl.id);
       }
 
       while (party.members.length < targetGroupSize && allDps.length > 0) {
         const dpsToAdd = allDps[0];
         party.members.push(dpsToAdd);
         usedCharacters.add(dpsToAdd.id);
-        allDps = allDps.filter(dps => dps.id !== dpsToAdd.id);
+        allDps = allDps.filter((dps) => dps.id !== dpsToAdd.id);
       }
     }
 
     return parties;
   }
 
-  private distributeUnassignedPlayers(unassignedPlayers: Character[], parties: Party[]): void {
+  private distributeUnassignedPlayers(
+    unassignedPlayers: Character[],
+    parties: Party[],
+  ): void {
     parties.sort((a, b) => a.members.length - b.members.length);
 
     for (const player of unassignedPlayers) {
-      const targetParty = parties.find(p => p.members.length < 5);
-      
+      const targetParty = parties.find((p) => p.members.length < 5);
+
       if (targetParty) {
         targetParty.members.push(player);
       } else {
@@ -473,8 +633,8 @@ export class PartyService {
     parties.forEach((party, index) => {
       if (party.members.length === 0) return;
 
-      const keyMin = Math.min(...party.members.map(m => m.keystoneMinLevel));
-      const keyMax = Math.max(...party.members.map(m => m.keystoneMaxLevel));
+      const keyMin = Math.min(...party.members.map((m) => m.keystoneMinLevel));
+      const keyMax = Math.max(...party.members.map((m) => m.keystoneMaxLevel));
       const keyRange = keyMax - keyMin;
 
       if (keyRange > 4) {
@@ -490,40 +650,55 @@ export class PartyService {
     });
   }
 
-  private calculateRedundancyScore(candidate: Character, party: Party, previousShuffles: Party[][]): number {
+  private calculateRedundancyScore(
+    candidate: Character,
+    party: Party,
+    previousShuffles: Party[][],
+  ): number {
     let score = 0;
-    const currentGroupMembers = party.members.map(member => member.id);
-    
-    for (let shuffleIndex = previousShuffles.length - 1; shuffleIndex >= 0; shuffleIndex--) {
+    const currentGroupMembers = party.members.map((member) => member.id);
+
+    for (
+      let shuffleIndex = previousShuffles.length - 1;
+      shuffleIndex >= 0;
+      shuffleIndex--
+    ) {
       const shuffle = previousShuffles[shuffleIndex];
       const weight = 1 / (previousShuffles.length - shuffleIndex);
-      
+
       for (const group of shuffle) {
-        const commonMembers = group.members.filter(m => 
-          currentGroupMembers.includes(m.id) || m.id === candidate.id
+        const commonMembers = group.members.filter(
+          (m) => currentGroupMembers.includes(m.id) || m.id === candidate.id,
         ).length;
-        
+
         if (commonMembers > 0) {
           score += commonMembers * weight;
         }
       }
     }
-    
+
     return score;
   }
 
-  private swapMembers(party1: Party, party2: Party, member1: Character, member2: Character): void {
+  private swapMembers(
+    party1: Party,
+    party2: Party,
+    member1: Character,
+    member2: Character,
+  ): void {
     const index1 = party1.members.indexOf(member1);
     const index2 = party2.members.indexOf(member2);
-    
+
     if (index1 !== -1 && index2 !== -1) {
       party1.members[index1] = member2;
       party2.members[index2] = member1;
     }
   }
 
-  private optimizeGlobalDistribution(parties: Party[], previousShuffles: Party[][]): void {
-    const allMembers = parties.flatMap(p => p.members);
+  private optimizeGlobalDistribution(
+    parties: Party[],
+    previousShuffles: Party[][],
+  ): void {
     let improved = true;
     let iterations = 0;
     const MAX_ITERATIONS = 100;
@@ -531,23 +706,39 @@ export class PartyService {
     while (improved && iterations < MAX_ITERATIONS) {
       improved = false;
       iterations++;
-      
+
       for (let i = 0; i < parties.length; i++) {
         for (let j = i + 1; j < parties.length; j++) {
           const party1 = parties[i];
           const party2 = parties[j];
-          
+
           for (const member1 of party1.members) {
             for (const member2 of party2.members) {
               if (member1.role === member2.role) {
-                const scoreBefore = 
-                  this.calculateRedundancyScore(member1, party1, previousShuffles) +
-                  this.calculateRedundancyScore(member2, party2, previousShuffles);
-                
-                const scoreAfter = 
-                  this.calculateRedundancyScore(member2, party1, previousShuffles) +
-                  this.calculateRedundancyScore(member1, party2, previousShuffles);
-                
+                const scoreBefore =
+                  this.calculateRedundancyScore(
+                    member1,
+                    party1,
+                    previousShuffles,
+                  ) +
+                  this.calculateRedundancyScore(
+                    member2,
+                    party2,
+                    previousShuffles,
+                  );
+
+                const scoreAfter =
+                  this.calculateRedundancyScore(
+                    member2,
+                    party1,
+                    previousShuffles,
+                  ) +
+                  this.calculateRedundancyScore(
+                    member1,
+                    party2,
+                    previousShuffles,
+                  );
+
                 if (scoreAfter < scoreBefore) {
                   this.swapMembers(party1, party2, member1, member2);
                   improved = true;
@@ -563,33 +754,38 @@ export class PartyService {
   private filterEligibleMembers(
     candidates: Character[],
     party: Party,
-    previousShuffles: Party[][]
+    previousShuffles: Party[][],
   ): Character[] {
     if (previousShuffles.length === 0 || party.members.length === 0) {
       return candidates;
     }
 
-    const candidateScores = candidates.map(candidate => ({
+    const candidateScores = candidates.map((candidate) => ({
       candidate,
-      score: this.calculateRedundancyScore(candidate, party, previousShuffles)
+      score: this.calculateRedundancyScore(candidate, party, previousShuffles),
     }));
 
-    const minScore = Math.min(...candidateScores.map(c => c.score));
+    const minScore = Math.min(...candidateScores.map((c) => c.score));
 
     const leastRedundantCandidates = candidateScores
-      .filter(c => c.score === minScore)
-      .map(c => c.candidate);
+      .filter((c) => c.score === minScore)
+      .map((c) => c.candidate);
 
     if (party.members.length === 0) {
       return leastRedundantCandidates;
     }
 
-    const partyKeyMin = Math.min(...party.members.map(m => m.keystoneMinLevel));
-    const partyKeyMax = Math.max(...party.members.map(m => m.keystoneMaxLevel));
+    const partyKeyMin = Math.min(
+      ...party.members.map((m) => m.keystoneMinLevel),
+    );
+    const partyKeyMax = Math.max(
+      ...party.members.map((m) => m.keystoneMaxLevel),
+    );
 
-    const strictCompatibleCandidates = leastRedundantCandidates.filter(candidate =>
-      candidate.keystoneMinLevel <= partyKeyMin &&
-      candidate.keystoneMaxLevel >= partyKeyMax
+    const strictCompatibleCandidates = leastRedundantCandidates.filter(
+      (candidate) =>
+        candidate.keystoneMinLevel <= partyKeyMin &&
+        candidate.keystoneMaxLevel >= partyKeyMax,
     );
 
     if (strictCompatibleCandidates.length > 0) {
@@ -597,9 +793,12 @@ export class PartyService {
     }
 
     const KEYSTONE_TOLERANCE = 2;
-    const looseCompatibleCandidates = leastRedundantCandidates.filter(candidate =>
-      Math.abs(candidate.keystoneMinLevel - partyKeyMin) <= KEYSTONE_TOLERANCE &&
-      Math.abs(candidate.keystoneMaxLevel - partyKeyMax) <= KEYSTONE_TOLERANCE
+    const looseCompatibleCandidates = leastRedundantCandidates.filter(
+      (candidate) =>
+        Math.abs(candidate.keystoneMinLevel - partyKeyMin) <=
+          KEYSTONE_TOLERANCE &&
+        Math.abs(candidate.keystoneMaxLevel - partyKeyMax) <=
+          KEYSTONE_TOLERANCE,
     );
 
     if (looseCompatibleCandidates.length > 0) {
@@ -607,13 +806,21 @@ export class PartyService {
     }
 
     return leastRedundantCandidates.sort((a, b) => {
-      const aDiff = Math.abs(a.keystoneMinLevel - partyKeyMin) + Math.abs(a.keystoneMaxLevel - partyKeyMax);
-      const bDiff = Math.abs(b.keystoneMinLevel - partyKeyMin) + Math.abs(b.keystoneMaxLevel - partyKeyMax);
+      const aDiff =
+        Math.abs(a.keystoneMinLevel - partyKeyMin) +
+        Math.abs(a.keystoneMaxLevel - partyKeyMax);
+      const bDiff =
+        Math.abs(b.keystoneMinLevel - partyKeyMin) +
+        Math.abs(b.keystoneMaxLevel - partyKeyMax);
       return aDiff - bDiff;
     });
   }
 
   private isDpsAvailable(party: Party) {
-    return party.members.filter(member => member.role === 'DIST' || member.role === 'CAC').length < 3;
+    return (
+      party.members.filter(
+        (member) => member.role === 'DIST' || member.role === 'CAC',
+      ).length < 3
+    );
   }
 }

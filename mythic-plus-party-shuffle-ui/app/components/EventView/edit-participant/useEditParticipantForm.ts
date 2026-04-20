@@ -122,10 +122,7 @@ export function useEditParticipantForm({
   const onKeyMinChange = useCallback((raw: string) => {
     const val = Math.max(
       KEYSTONE_MIN_LEVEL,
-      Math.min(
-        KEYSTONE_MAX_LEVEL,
-        parseInt(raw, 10) || KEYSTONE_MIN_LEVEL,
-      ),
+      Math.min(KEYSTONE_MAX_LEVEL, parseInt(raw, 10) || KEYSTONE_MIN_LEVEL),
     );
     setKeyMin(val);
     setKeyMax((max) => (val > max ? val : max));
@@ -134,10 +131,7 @@ export function useEditParticipantForm({
   const onKeyMaxChange = useCallback((raw: string) => {
     const val = Math.max(
       KEYSTONE_MIN_LEVEL,
-      Math.min(
-        KEYSTONE_MAX_LEVEL,
-        parseInt(raw, 10) || KEYSTONE_MAX_LEVEL,
-      ),
+      Math.min(KEYSTONE_MAX_LEVEL, parseInt(raw, 10) || KEYSTONE_MAX_LEVEL),
     );
     setKeyMax(val);
     setKeyMin((min) => (val < min ? val : min));

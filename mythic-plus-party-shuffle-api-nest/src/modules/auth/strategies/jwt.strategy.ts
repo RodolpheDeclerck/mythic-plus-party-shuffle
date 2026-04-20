@@ -53,7 +53,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     );
 
     if (this.configService.get<string>('nodeEnv') === 'development') {
-      this.logger.debug(`JWT validated for user id ${user.id} (sub: ${payload.sub})`);
+      this.logger.debug(
+        `JWT validated for user id ${user.id} (sub: ${payload.sub})`,
+      );
     }
 
     return {

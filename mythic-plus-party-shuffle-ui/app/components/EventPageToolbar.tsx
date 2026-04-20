@@ -10,7 +10,8 @@ import useAuthCheck from '@/hooks/useAuthCheck';
 
 export function EventPageToolbar() {
   const { t } = useTranslation();
-  const { isAuthenticated, isAuthChecked, handleLogout, username } = useAuthCheck();
+  const { isAuthenticated, isAuthChecked, handleLogout, username } =
+    useAuthCheck();
 
   return (
     <div className="fixed right-4 top-4 z-50 flex flex-nowrap items-center justify-end gap-2 sm:gap-3">

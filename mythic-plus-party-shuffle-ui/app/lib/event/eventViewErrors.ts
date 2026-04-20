@@ -14,12 +14,8 @@ export function resolveEventViewErrorMessage(
     partyError: string | null;
   },
 ): string {
-  const {
-    charactersFetchErrorCode,
-    errorState,
-    characterError,
-    partyError,
-  } = input;
+  const { charactersFetchErrorCode, errorState, characterError, partyError } =
+    input;
 
   if (charactersFetchErrorCode === CHARACTERS_FETCH_FAILED) {
     return t('eventPage.fetchCharactersError');

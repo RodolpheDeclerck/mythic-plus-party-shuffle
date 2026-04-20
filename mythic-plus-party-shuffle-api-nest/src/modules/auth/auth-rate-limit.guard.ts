@@ -8,7 +8,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { Request, Response } from 'express';
-import { AUTH_RATE_LIMIT_KIND_KEY, AuthRateLimitKind } from './auth-rate-limit.decorator';
+import {
+  AUTH_RATE_LIMIT_KIND_KEY,
+  AuthRateLimitKind,
+} from './auth-rate-limit.decorator';
 import { getClientIp } from './client-ip';
 import { RateLimitService } from './rate-limit.service';
 
@@ -21,16 +24,18 @@ export class AuthRateLimitGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const kind = this.reflector.getAllAndOverride<AuthRateLimitKind>(AUTH_RATE_LIMIT_KIND_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const kind = this.reflector.getAllAndOverride<AuthRateLimitKind>(
+      AUTH_RATE_LIMIT_KIND_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (!kind) {
       return true;
     }
 
     const limit = this.configService.get<number>(`rateLimit.${kind}.limit`);
-    const windowSec = this.configService.get<number>(`rateLimit.${kind}.windowSec`);
+    const windowSec = this.configService.get<number>(
+      `rateLimit.${kind}.windowSec`,
+    );
     if (!limit || !windowSec || limit <= 0 || windowSec <= 0) {
       return true;
     }

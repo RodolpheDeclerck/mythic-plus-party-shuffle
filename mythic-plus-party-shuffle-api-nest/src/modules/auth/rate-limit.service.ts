@@ -14,7 +14,11 @@ export class RateLimitService {
   /**
    * Fixed window: INCR key, EXPIRE on first hit. If count > limit, not allowed.
    */
-  async consume(redisKey: string, limit: number, windowSec: number): Promise<RateLimitConsumeResult> {
+  async consume(
+    redisKey: string,
+    limit: number,
+    windowSec: number,
+  ): Promise<RateLimitConsumeResult> {
     const count = await this.redis.incr(redisKey);
     if (count === 1) {
       await this.redis.expire(redisKey, windowSec);

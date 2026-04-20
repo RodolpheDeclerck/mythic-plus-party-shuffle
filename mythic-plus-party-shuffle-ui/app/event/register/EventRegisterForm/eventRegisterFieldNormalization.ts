@@ -11,10 +11,7 @@ export function normalizeIlvlOnBlur(inputValue: string): string {
 
   const numValue = parseInt(inputValue, 10);
   if (!Number.isNaN(numValue)) {
-    const value = Math.max(
-      ITEM_LEVEL_MIN,
-      Math.min(numValue, ITEM_LEVEL_MAX),
-    );
+    const value = Math.max(ITEM_LEVEL_MIN, Math.min(numValue, ITEM_LEVEL_MAX));
     return value.toString();
   }
 

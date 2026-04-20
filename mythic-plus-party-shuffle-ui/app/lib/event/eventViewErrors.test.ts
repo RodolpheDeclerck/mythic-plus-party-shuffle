@@ -5,10 +5,10 @@ import {
 
 const mockT = (key: string) =>
   (
-    {
+    ({
       'eventPage.fetchCharactersError': 'FETCH_MSG',
       'eventPage.loadError': 'LOAD_MSG',
-    } as Record<string, string>
+    }) as Record<string, string>
   )[key] ?? key;
 
 describe('resolveEventViewErrorMessage', () => {

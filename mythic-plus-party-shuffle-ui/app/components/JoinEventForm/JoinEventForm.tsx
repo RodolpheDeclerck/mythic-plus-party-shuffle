@@ -118,7 +118,6 @@ const JoinEventForm = () => {
           {t('home.signIn')}
         </Link>
       </p>
-
     </form>
   );
 };

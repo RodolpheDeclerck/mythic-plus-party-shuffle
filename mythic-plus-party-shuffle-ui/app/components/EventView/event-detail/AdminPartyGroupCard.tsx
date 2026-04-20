@@ -97,7 +97,7 @@ export function AdminPartyGroupCard({
           group.id,
           firstEmptySlot !== -1
             ? firstEmptySlot
-            : draggedItem?.slotIndex ?? 0,
+            : (draggedItem?.slotIndex ?? 0),
         )
       }
       className={`overflow-hidden rounded-xl border bg-[color-mix(in_srgb,var(--rift-void)_80%,transparent)] transition-all ${

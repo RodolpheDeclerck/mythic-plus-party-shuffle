@@ -54,11 +54,7 @@ function setup({
   const onPartiesUpdate = jest.fn();
 
   const { result, rerender } = renderHook(
-    (props: {
-      parties: Party[];
-      characters: Character[];
-      isAdmin: boolean;
-    }) =>
+    (props: { parties: Party[]; characters: Character[]; isAdmin: boolean }) =>
       useSyncedPartyGroups({
         parties: props.parties,
         characters: props.characters,
@@ -188,7 +184,10 @@ describe('parties refresh with stale data', () => {
     const chars = [mkChar(1, 'TANK'), mkChar(2, 'HEAL')];
     const parties1: Party[] = [{ members: chars }];
 
-    const { result, rerender } = setup({ parties: parties1, characters: chars });
+    const { result, rerender } = setup({
+      parties: parties1,
+      characters: chars,
+    });
     expect(result.current.shuffledGroups[0].members[0]?.id).toBe('1');
 
     // New shuffle — completely different group with new id

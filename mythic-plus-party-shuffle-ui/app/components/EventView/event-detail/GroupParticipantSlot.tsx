@@ -5,7 +5,10 @@ import { GripVertical, User } from 'lucide-react';
 import { BloodlustIcon, BattleRezIcon } from '@/components/EventView/wow-icons';
 import type { EventParticipant } from '@/components/EventView/eventPartyModel';
 import { wowClassTextColors } from '@/components/EventView/eventClassColors';
-import { adminGroupIlvlBadgeClass, playerGroupRoleIcons } from './partyGroupUtils';
+import {
+  adminGroupIlvlBadgeClass,
+  playerGroupRoleIcons,
+} from './partyGroupUtils';
 import type { DraggedPartyItem } from './usePartyDragDrop';
 
 export function GroupParticipantSlot({
@@ -51,8 +54,7 @@ export function GroupParticipantSlot({
   const isDropTarget =
     dragOverParticipant === participant?.id &&
     draggedItem?.participant.id !== participant?.id;
-  const canSwap =
-    draggedItem && draggedItem.participant.id !== participant?.id;
+  const canSwap = draggedItem && draggedItem.participant.id !== participant?.id;
 
   if (!participant) {
     return (

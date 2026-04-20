@@ -25,9 +25,7 @@ export function getPartyGroupAggregateStats(group: EventPartyGroup): {
   minKey: number;
   maxKey: number;
 } | null {
-  const members = group.members.filter(
-    (m): m is EventParticipant => m != null,
-  );
+  const members = group.members.filter((m): m is EventParticipant => m != null);
   if (members.length === 0) return null;
   const ilvls = members.map((m) => m.ilvl);
   const sum = ilvls.reduce((a, b) => a + b, 0);
@@ -41,9 +39,7 @@ export function getPartyGroupAggregateStats(group: EventPartyGroup): {
 }
 
 export function getPartyGroupCompositionStatus(group: EventPartyGroup) {
-  const members = group.members.filter(
-    (m): m is EventParticipant => m != null,
-  );
+  const members = group.members.filter((m): m is EventParticipant => m != null);
   const hasTank = members.some((m) => m.role === 'tank');
   const hasHealer = members.some((m) => m.role === 'healer');
   const dpsCount = members.filter(

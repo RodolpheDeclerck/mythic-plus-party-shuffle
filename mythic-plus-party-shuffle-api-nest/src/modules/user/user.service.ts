@@ -34,7 +34,10 @@ export class UserService {
         select: userPublicSelect,
       });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      ) {
         throw new NotFoundException('User not found');
       }
       throw e;
@@ -45,7 +48,10 @@ export class UserService {
     try {
       await this.prisma.user.delete({ where: { id } });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      ) {
         throw new NotFoundException('User not found');
       }
       throw e;

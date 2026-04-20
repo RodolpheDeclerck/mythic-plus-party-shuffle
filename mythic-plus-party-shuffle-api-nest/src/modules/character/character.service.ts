@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { SpecializationDetails } from '../../shared/data/specializationsDetails.data';
@@ -74,8 +78,10 @@ export class CharacterService {
       updateData.battleRez = specializationInfo.battleRez;
     }
     if (data.iLevel) updateData.iLevel = data.iLevel;
-    if (data.keystoneMinLevel) updateData.keystoneMinLevel = data.keystoneMinLevel;
-    if (data.keystoneMaxLevel) updateData.keystoneMaxLevel = data.keystoneMaxLevel;
+    if (data.keystoneMinLevel)
+      updateData.keystoneMinLevel = data.keystoneMinLevel;
+    if (data.keystoneMaxLevel)
+      updateData.keystoneMaxLevel = data.keystoneMaxLevel;
 
     if (data.eventCode) {
       const event = await this.prisma.event.findUnique({
@@ -101,7 +107,10 @@ export class CharacterService {
         data: { eventCode: null },
       });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      ) {
         throw new NotFoundException(`Character with ID ${id} not found`);
       }
       throw e;
@@ -126,8 +135,16 @@ export class CharacterService {
         return await this.updateCharacter(data.id, data as UpdateCharacterDto);
       }
     }
-    if (!data.name || !data.characterClass || !data.specialization || !data.iLevel || !data.eventCode) {
-      throw new BadRequestException('Les champs name, characterClass, specialization, iLevel et eventCode sont requis pour créer un nouveau personnage');
+    if (
+      !data.name ||
+      !data.characterClass ||
+      !data.specialization ||
+      !data.iLevel ||
+      !data.eventCode
+    ) {
+      throw new BadRequestException(
+        'Les champs name, characterClass, specialization, iLevel et eventCode sont requis pour créer un nouveau personnage',
+      );
     }
     return await this.createCharacter(data as CreateCharacterDto);
   }
