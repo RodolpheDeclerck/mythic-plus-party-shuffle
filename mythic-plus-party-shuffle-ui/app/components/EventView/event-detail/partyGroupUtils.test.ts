@@ -77,9 +77,9 @@ describe('getGroupSize', () => {
   });
 
   it('returns 5 for a full group', () => {
-    expect(
-      getGroupSize(group([p('1'), p('2'), p('3'), p('4'), p('5')])),
-    ).toBe(5);
+    expect(getGroupSize(group([p('1'), p('2'), p('3'), p('4'), p('5')]))).toBe(
+      5,
+    );
   });
 });
 
@@ -107,9 +107,9 @@ describe('groupHasBL', () => {
   });
 
   it('returns true when any member has bloodlust', () => {
-    expect(
-      groupHasBL(group([p('1'), p('2', { hasBloodlust: true })])),
-    ).toBe(true);
+    expect(groupHasBL(group([p('1'), p('2', { hasBloodlust: true })]))).toBe(
+      true,
+    );
   });
 
   it('returns false for an empty group', () => {
@@ -123,9 +123,9 @@ describe('groupHasRez', () => {
   });
 
   it('returns true when any member has battle rez', () => {
-    expect(
-      groupHasRez(group([p('1', { hasBattleRez: true }), p('2')])),
-    ).toBe(true);
+    expect(groupHasRez(group([p('1', { hasBattleRez: true }), p('2')]))).toBe(
+      true,
+    );
   });
 });
 
@@ -139,9 +139,7 @@ describe('assignedParticipantIds', () => {
       group([p('10'), null, p('11')], 'a'),
       group([null, p('20'), null], 'b'),
     ];
-    expect(assignedParticipantIds(groups)).toEqual(
-      new Set(['10', '11', '20']),
-    );
+    expect(assignedParticipantIds(groups)).toEqual(new Set(['10', '11', '20']));
   });
 
   it('returns empty set for empty groups', () => {

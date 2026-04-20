@@ -199,18 +199,14 @@ export function useEventRegisterForm({
 
   const handleKeystoneMinBlur = useCallback(
     (event: React.FocusEvent<HTMLInputElement>) => {
-      setKStoneMin(
-        normalizeKeystoneMinOnBlur(event.target.value, kStoneMax),
-      );
+      setKStoneMin(normalizeKeystoneMinOnBlur(event.target.value, kStoneMax));
     },
     [kStoneMax],
   );
 
   const handleKeystoneMaxBlur = useCallback(
     (event: React.FocusEvent<HTMLInputElement>) => {
-      setKStoneMax(
-        normalizeKeystoneMaxOnBlur(event.target.value, kStoneMin),
-      );
+      setKStoneMax(normalizeKeystoneMaxOnBlur(event.target.value, kStoneMin));
     },
     [kStoneMin],
   );

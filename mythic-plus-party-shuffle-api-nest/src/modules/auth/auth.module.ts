@@ -7,9 +7,7 @@ import { AuthRateLimitGuard } from './auth-rate-limit.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-  ],
+  imports: [PassportModule.register({ defaultStrategy: 'jwt' })],
   controllers: [AuthController],
   providers: [AuthService, RateLimitService, AuthRateLimitGuard, JwtStrategy],
   exports: [AuthService, PassportModule],

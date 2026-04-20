@@ -6,7 +6,10 @@ import { AuthRateLimitGuard } from './auth-rate-limit.guard';
 import { RateLimitService } from './rate-limit.service';
 
 describe('AuthRateLimitGuard', () => {
-  function createGuard(consumeResult: { allowed: boolean; retryAfterSec: number }) {
+  function createGuard(consumeResult: {
+    allowed: boolean;
+    retryAfterSec: number;
+  }) {
     const consume = jest.fn().mockResolvedValue(consumeResult);
     const rateLimitService = { consume } as unknown as RateLimitService;
     const configService = {
@@ -17,7 +20,11 @@ describe('AuthRateLimitGuard', () => {
       },
     } as unknown as ConfigService;
     return {
-      guard: new AuthRateLimitGuard(rateLimitService, new Reflector(), configService),
+      guard: new AuthRateLimitGuard(
+        rateLimitService,
+        new Reflector(),
+        configService,
+      ),
       consume,
     };
   }
@@ -40,7 +47,10 @@ describe('AuthRateLimitGuard', () => {
   });
 
   it('throws 429 and sets Retry-After when over limit', async () => {
-    const { guard, consume } = createGuard({ allowed: false, retryAfterSec: 42 });
+    const { guard, consume } = createGuard({
+      allowed: false,
+      retryAfterSec: 42,
+    });
     const handler = function login() {};
     Reflect.defineMetadata(AUTH_RATE_LIMIT_KIND_KEY, 'login', handler);
     const setHeader = jest.fn();
@@ -59,7 +69,9 @@ describe('AuthRateLimitGuard', () => {
       thrown = e;
     }
     expect(thrown).toBeInstanceOf(HttpException);
-    expect((thrown as HttpException).getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    expect((thrown as HttpException).getStatus()).toBe(
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
     expect(setHeader).toHaveBeenCalledWith('Retry-After', '42');
     expect(consume).toHaveBeenCalledWith('rl:auth:login:1.2.3.4', 10, 900);
   });

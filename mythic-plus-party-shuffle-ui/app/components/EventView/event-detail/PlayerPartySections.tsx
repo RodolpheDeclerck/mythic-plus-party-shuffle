@@ -182,11 +182,7 @@ export function PlayerVisiblePartySections({
                                   Icon: Heart,
                                   color: 'text-green-400',
                                 });
-                              for (
-                                let i = 0;
-                                i < comp.missingDps;
-                                i++
-                              )
+                              for (let i = 0; i < comp.missingDps; i++)
                                 missingRoles.push({
                                   label: 'DPS',
                                   Icon: Sword,
@@ -213,8 +209,7 @@ export function PlayerVisiblePartySections({
                                       className="px-4 py-2 text-sm italic text-muted-foreground/40"
                                     >
                                       {(() => {
-                                        const role =
-                                          missingRoles[missingIdx++];
+                                        const role = missingRoles[missingIdx++];
                                         if (!role) return null;
                                         const { Icon, color, label } = role;
                                         return (

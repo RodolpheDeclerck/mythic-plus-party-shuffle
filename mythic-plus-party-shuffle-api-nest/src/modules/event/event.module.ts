@@ -7,10 +7,7 @@ import { PartyModule } from '../party/party.module';
 import { WebSocketModule } from '../../shared/websocket/websocket.module';
 
 @Module({
-  imports: [
-    PartyModule,
-    WebSocketModule,
-  ],
+  imports: [PartyModule, WebSocketModule],
   controllers: [EventController],
   providers: [EventService, EventAdminGuard, PartyFacade],
   exports: [EventService],

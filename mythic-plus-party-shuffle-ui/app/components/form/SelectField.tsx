@@ -16,7 +16,9 @@ const SelectField: React.FC<SelectFieldProps> = ({
   onChange,
   placeholder,
 }) => {
-  const handleChange = (selectedOption: { value: string; label: string } | null) => {
+  const handleChange = (
+    selectedOption: { value: string; label: string } | null,
+  ) => {
     if (selectedOption) {
       onChange(selectedOption.value);
     } else {

@@ -39,11 +39,7 @@ export function useEventViewBootstrap({
       const characterData = localStorage.getItem('createdCharacter');
       if (characterData) {
         setCreatedCharacter(JSON.parse(characterData) as Character);
-      } else if (
-        isAuthChecked &&
-        isAuthenticated === false &&
-        eventCode
-      ) {
+      } else if (isAuthChecked && isAuthenticated === false && eventCode) {
         router.push('/event/register?code=' + eventCode);
       }
 

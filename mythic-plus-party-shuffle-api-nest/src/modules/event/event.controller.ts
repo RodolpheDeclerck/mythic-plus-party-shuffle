@@ -13,7 +13,6 @@ import {
   HttpStatus,
   UseGuards,
   Req,
-  HttpException,
   Logger,
 } from '@nestjs/common';
 import { EventService } from './event.service';
@@ -40,7 +39,7 @@ export class EventController {
    */
   private mapEventToResponse(event: any): any {
     const arePartiesVisibleValue = Boolean(event.arePartiesVisible ?? false);
-    
+
     // Créer un objet simple avec toutes les propriétés primitives d'abord
     const response: any = {
       id: Number(event.id),
@@ -52,7 +51,7 @@ export class EventController {
       arePartiesVisible: arePartiesVisibleValue, // Nom de la colonne DB
       visible: arePartiesVisibleValue, // Alias pour le frontend (compatibilité) - IMPORTANT!
     };
-    
+
     // Include relations if loaded
     if (event.createdBy) {
       response.createdBy = {
@@ -71,12 +70,14 @@ export class EventController {
     if (event.characters && Array.isArray(event.characters)) {
       response.characters = event.characters;
     }
-    
+
     // Log pour vérifier que visible est bien présent
     if (!response.hasOwnProperty('visible')) {
-      this.logger.warn('[mapEventToResponse] visible property missing after map');
+      this.logger.warn(
+        '[mapEventToResponse] visible property missing after map',
+      );
     }
-    
+
     return response;
   }
 
@@ -110,7 +111,7 @@ export class EventController {
     }
     // Sinon, retourner tous les événements
     const events = await this.eventService.getAllEvents();
-    return events.map(event => this.mapEventToResponse(event));
+    return events.map((event) => this.mapEventToResponse(event));
   }
 
   // ✅ Protégée : isAuthenticated
@@ -118,7 +119,7 @@ export class EventController {
   @UseGuards(JwtAuthGuard)
   async getAdminEvents(@Req() req: any) {
     const events = await this.eventService.getEventsByAdmin(req.user.id);
-    return events.map(event => this.mapEventToResponse(event));
+    return events.map((event) => this.mapEventToResponse(event));
   }
 
   // ✅ Publique
@@ -195,8 +196,11 @@ export class EventController {
   @Get(':eventCode/shuffle-parties')
   async shuffleParties(@Param('eventCode') eventCode: string) {
     this.logger.log(`Shuffle parties for event ${eventCode}`);
-    const shuffledParties = await this.partyFacade.shuffleAndSaveGroups(eventCode);
-    this.logger.log(`Shuffle completed for ${eventCode}: ${shuffledParties.length} parties`);
+    const shuffledParties =
+      await this.partyFacade.shuffleAndSaveGroups(eventCode);
+    this.logger.log(
+      `Shuffle completed for ${eventCode}: ${shuffledParties.length} parties`,
+    );
     this.webSocketService.emitPartiesUpdated(shuffledParties);
     return shuffledParties;
   }
@@ -214,15 +218,17 @@ export class EventController {
       eventCode,
       setPartiesVisibilityDto.visible,
     );
-    
+
     const response = this.mapEventToResponse(updatedEvent);
     this.logger.debug(
       `[setPartiesVisibility] response visible=${response.visible} arePartiesVisible=${response.arePartiesVisible}`,
     );
 
     this.webSocketService.emitEventUpdated(response);
-    this.logger.debug(`[setPartiesVisibility] emitted event-updated for ${eventCode}`);
-    
+    this.logger.debug(
+      `[setPartiesVisibility] emitted event-updated for ${eventCode}`,
+    );
+
     return response;
   }
 }

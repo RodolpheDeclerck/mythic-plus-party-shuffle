@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Workspace uses root package-lock.json; sub-project lockfile is ignored.
+package-lock.json
+
 # Logs
 logs
 *.log

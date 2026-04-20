@@ -33,7 +33,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       const request = context.switchToHttp().getRequest<Request>();
       const reason =
-        err instanceof Error ? err.message : info?.message || 'Authentication failed';
+        err instanceof Error
+          ? err.message
+          : info?.message || 'Authentication failed';
       this.logger.warn(
         `JWT auth failed: ${reason} (${request.method} ${request.path})`,
       );

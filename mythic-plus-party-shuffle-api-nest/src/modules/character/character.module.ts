@@ -5,10 +5,7 @@ import { WebSocketModule } from '../../shared/websocket/websocket.module';
 import { PartyModule } from '../party/party.module';
 
 @Module({
-  imports: [
-    WebSocketModule,
-    PartyModule,
-  ],
+  imports: [WebSocketModule, PartyModule],
   controllers: [CharacterController],
   providers: [CharacterService],
   exports: [CharacterService],

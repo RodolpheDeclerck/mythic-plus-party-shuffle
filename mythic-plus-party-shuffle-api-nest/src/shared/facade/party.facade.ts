@@ -11,8 +11,12 @@ export class PartyFacade {
   ) {}
 
   async shuffleAndSaveGroups(eventCode: string): Promise<Party[]> {
-    const characters = await this.eventService.getCharactersByEventCode(eventCode);
-    const parties = await this.partyService.shuffleGroups(characters, eventCode);
+    const characters =
+      await this.eventService.getCharactersByEventCode(eventCode);
+    const parties = await this.partyService.shuffleGroups(
+      characters,
+      eventCode,
+    );
     await this.partyService.saveGroupsToRedis(parties, eventCode);
     await this.partyService.saveShuffleToHistory(eventCode, parties);
     return parties;

@@ -65,8 +65,7 @@ export function AdminUnassignedParticipantsPanel({
               dragOverParticipant === participant.id &&
               draggedItem?.participant.id !== participant.id;
             const canSwap =
-              draggedItem &&
-              draggedItem.participant.id !== participant.id;
+              draggedItem && draggedItem.participant.id !== participant.id;
             const { icon: RoleIcon, color: roleColor } =
               playerGroupRoleIcons[participant.role];
 

@@ -12,7 +12,8 @@ export class MetadataController {
 
   @Get('specializations/:characterClass')
   getSpecializations(@Param('characterClass') characterClass: CharacterClass) {
-    const specializations = CharacterClassDetails[characterClass]?.specializations;
+    const specializations =
+      CharacterClassDetails[characterClass]?.specializations;
 
     if (!specializations) {
       throw new NotFoundException('Class not found');
@@ -22,7 +23,9 @@ export class MetadataController {
   }
 
   @Get('specialization-details/:specialization')
-  getSpecializationDetails(@Param('specialization') specialization: Specialization) {
+  getSpecializationDetails(
+    @Param('specialization') specialization: Specialization,
+  ) {
     const details = SpecializationDetails[specialization];
 
     if (!details) {
@@ -43,7 +46,8 @@ export class ClassesController {
 
   @Get('specializations/:characterClass')
   getSpecializations(@Param('characterClass') characterClass: CharacterClass) {
-    const specializations = CharacterClassDetails[characterClass]?.specializations;
+    const specializations =
+      CharacterClassDetails[characterClass]?.specializations;
 
     if (!specializations) {
       throw new NotFoundException('Class not found');

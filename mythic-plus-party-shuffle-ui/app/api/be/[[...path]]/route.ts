@@ -76,8 +76,7 @@ async function proxy(
   }
 
   const upstream = await fetch(url, init);
-  const body =
-    method === 'HEAD' ? null : await upstream.arrayBuffer();
+  const body = method === 'HEAD' ? null : await upstream.arrayBuffer();
 
   const res = new NextResponse(body, { status: upstream.status });
 

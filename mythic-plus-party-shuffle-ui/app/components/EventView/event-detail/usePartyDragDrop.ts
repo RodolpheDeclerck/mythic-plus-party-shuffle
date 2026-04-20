@@ -70,7 +70,11 @@ export function usePartyDragDrop(
 
       if (!draggedItem) return;
 
-      const { participant, fromGroupId, slotIndex: fromSlotIndex } = draggedItem;
+      const {
+        participant,
+        fromGroupId,
+        slotIndex: fromSlotIndex,
+      } = draggedItem;
 
       // Same group, same slot — no-op
       if (fromGroupId === toGroupId && fromSlotIndex === toSlotIndex) {
@@ -94,7 +98,10 @@ export function usePartyDragDrop(
         /* ---- unassigned → group ---- */
         if (fromGroupId === 'unassigned') {
           const existing = toGroup.members[toSlotIndex];
-          if (existing && (!targetParticipantId || existing.id !== targetParticipantId))
+          if (
+            existing &&
+            (!targetParticipantId || existing.id !== targetParticipantId)
+          )
             return prevGroups;
           toGroup.members[toSlotIndex] = participant;
           return newGroups;
@@ -146,7 +153,11 @@ export function usePartyDragDrop(
         return;
       }
 
-      const { participant, fromGroupId, slotIndex: fromSlotIndex } = draggedItem;
+      const {
+        participant,
+        fromGroupId,
+        slotIndex: fromSlotIndex,
+      } = draggedItem;
 
       setShuffledGroups((prevGroups) => {
         const newGroups = prevGroups.map((g) => ({

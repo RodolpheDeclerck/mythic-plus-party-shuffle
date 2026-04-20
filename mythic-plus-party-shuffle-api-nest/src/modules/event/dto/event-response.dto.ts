@@ -10,4 +10,3 @@ export class EventResponseDto {
   admins?: any[];
   characters?: any[];
 }
-

@@ -7,7 +7,9 @@ import { CreateEventDto, UpdateEventDto } from './dto';
 /** Default relations to include when querying events. */
 const eventInclude = {
   createdBy: { select: { id: true, username: true, email: true } },
-  admins: { select: { user: { select: { id: true, username: true, email: true } } } },
+  admins: {
+    select: { user: { select: { id: true, username: true, email: true } } },
+  },
 } satisfies Prisma.EventInclude;
 
 @Injectable()
@@ -109,7 +111,10 @@ export class EventService {
     try {
       await this.prisma.event.delete({ where: { code: eventCode } });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      ) {
         throw new NotFoundException('Event not found');
       }
       throw e;

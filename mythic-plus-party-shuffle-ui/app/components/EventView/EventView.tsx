@@ -125,12 +125,7 @@ const EventView: React.FC = () => {
 
   if (isVerifying || loading || !isAuthChecked) return <Loading />;
 
-  if (
-    charactersFetchErrorCode ||
-    errorState ||
-    characterError ||
-    partyError
-  ) {
+  if (charactersFetchErrorCode || errorState || characterError || partyError) {
     return (
       <div
         className={cn(

@@ -15,11 +15,7 @@ import { useEventRegisterForm } from './useEventRegisterForm';
 export type { EventRegisterFormProps } from './eventRegisterFormProps';
 
 const EventRegisterForm: React.FC<EventRegisterFormProps> = (props) => {
-  const {
-    variant = 'page',
-    onCancel,
-    hideSignInLink = false,
-  } = props;
+  const { variant = 'page', onCancel, hideSignInLink = false } = props;
 
   const {
     eventCode,
