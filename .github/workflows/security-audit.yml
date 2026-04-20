@@ -1,0 +1,37 @@
+name: npm audit
+
+on:
+  push:
+    branches: [main, next]
+  pull_request:
+    branches: [main, next]
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # Informational only for now: surfaces vulnerabilities without blocking.
+      # Tighten to --audit-level=high once the current backlog is triaged.
+      - name: Audit (all workspaces, non-blocking)
+        run: npm audit --audit-level=critical || true
+
+      - name: Audit (strict, informational)
+        run: npm audit --audit-level=high
+        continue-on-error: true
