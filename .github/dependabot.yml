@@ -1,29 +1,18 @@
 version: 2
 updates:
+  # Root-level npm workspaces: Dependabot must scan from the root package.json
+  # so it can update the single root package-lock.json (sub-project lockfiles
+  # are gitignored and not used by CI). Listing sub-projects directly leaves
+  # the root lockfile out of sync and breaks `npm ci`.
   - package-ecosystem: npm
-    directory: /mythic-plus-party-shuffle-ui
+    directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
     labels:
       - dependencies
-      - ui
     groups:
-      ui-minor-and-patch:
-        update-types:
-          - minor
-          - patch
-
-  - package-ecosystem: npm
-    directory: /mythic-plus-party-shuffle-api-nest
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    labels:
-      - dependencies
-      - api
-    groups:
-      api-minor-and-patch:
+      minor-and-patch:
         update-types:
           - minor
           - patch
