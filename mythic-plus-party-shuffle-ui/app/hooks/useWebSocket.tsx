@@ -26,10 +26,10 @@ const useWebSocket = (
   useEffect(() => {
     let isMounted = true;
     const socket = io(getSocketUrl(), {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: Infinity,
     });
 
     const handleCharacterUpdated = () => {
