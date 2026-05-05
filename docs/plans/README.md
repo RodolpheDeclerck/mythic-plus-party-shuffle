@@ -14,6 +14,7 @@ Index des plans versionnés avec le code. **Convention de nom :** `NN-titre-en-k
 | 08 | [08-rename-demon-hunter-enum.md](08-rename-demon-hunter-enum.md) | Renommer enum SQL `Demon Hunter` → `DemonHunter`, fix création + couleur DH |
 | 09 | [09-ci-hardening.md](09-ci-hardening.md) | Durcir la CI : couverture, typecheck, Prettier check, Prisma validate, Dependabot, CodeQL, Sonar, E2E |
 | 10 | [10-major-upgrades-deferred.md](10-major-upgrades-deferred.md) | Backlog des bumps majors reportés (Next 14→16, Auth0 3→4, @types/node 20→25) |
+| 11 | [11-fix-character-fetch-retry.md](11-fix-character-fetch-retry.md) | Retry auto + reset errorState sur la liste des participants (erreur intermittente après inscription) |
 
 **Nouveau plan :** utiliser le numéro suivant (ex. `05-nom-du-plan.md`) et ajouter une ligne dans ce tableau.
 
