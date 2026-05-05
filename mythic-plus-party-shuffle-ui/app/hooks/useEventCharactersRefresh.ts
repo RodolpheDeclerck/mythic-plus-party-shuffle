@@ -14,6 +14,7 @@ export function useEventCharactersRefresh(
 
   const fetchCharacters = useCallback(async () => {
     if (!eventCode) return;
+    setErrorState(null);
     try {
       const updatedCharacters = await fetchCharactersApi(eventCode);
       setCharacters(updatedCharacters);
