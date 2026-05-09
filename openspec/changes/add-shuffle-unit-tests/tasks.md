@@ -4,9 +4,13 @@ Ordered. Check off as you go.
 
 ## 0. Setup
 
-- [ ] Read `specs/shuffle/spec.md` end to end.
+- [ ] Read `specs/shuffle/spec.md` end to end. **Pay close attention to invariant 9 (non-determinism)**: the algorithm calls `shuffleArray` and `Math.random` internally, so two calls with identical inputs can produce different outputs.
 - [ ] Skim `mythic-plus-party-shuffle-api-nest/src/modules/party/party.service.ts` to understand the surface area.
-- [ ] Note: the shuffle history dependency reads from Redis. We will mock `RedisService` (or whatever is injected) so tests are pure.
+- [ ] Mock `RedisService` (or whatever is injected) so tests are pure.
+- [ ] Decide on a non-determinism strategy. Two viable approaches:
+  - **(A) Property-based**: assert only on structural invariants (role caps, ≥1 melee, etc.) that hold regardless of internal randomness.
+  - **(B) Seeded randomness**: `jest.spyOn(Math, 'random')` and stub `shuffleArray` to a deterministic identity, so we can assert on specific party assignments.
+  Approach A is preferred for most tests; B is acceptable only when the test explicitly needs ordering control (e.g. validating tie-break logic). Document the choice in a comment at the top of `party.service.spec.ts`.
 
 ## 1. Test file scaffold
 
@@ -58,8 +62,11 @@ Ordered. Check off as you go.
 
 ## 9. Anti-repeat (invariant 8)
 
-- [ ] Test: with a mocked history showing characters A and B were grouped in the last shuffle, the algorithm prefers separating them on the next shuffle when a viable alternative exists.
-- [ ] Test: with empty history, no anti-repeat penalty influences the result (smoke test).
+Anti-repeat is a **post-pass swap optimization**, not a constraint during initial assignment. Tests should reflect that.
+
+- [ ] Test: with a mocked history showing A and B were grouped repeatedly in the last 3 shuffles, **across N seeded runs** the proportion of resulting parties pairing A and B is lower than with empty history (statistical test, requires approach B with seeded randomness).
+- [ ] Test: with empty history, the optimizer pass is a no-op or near no-op on a roster that already satisfies all other constraints (smoke).
+- [ ] Test: optimizer never violates higher-priority invariants (role caps, party size). After optimization, all role-cap invariants from spec section 1 still hold.
 
 ## 10. Edge cases
 

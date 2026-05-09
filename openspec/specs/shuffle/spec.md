@@ -38,10 +38,30 @@ Each `Character`:
 
 ## Outputs
 
-An ordered `Party[]`. Each party has:
+A `Party[]`, in creation order. Each party has:
 
 - a numeric `id` assigned by the algorithm;
 - a `members: Character[]` of length 1–5.
+
+## Algorithmic phases
+
+The algorithm proceeds in phases. Each phase fills slots greedily based on role and a per-candidate score (keystone width first, then iLevel — see invariants 6 and 7). Anti-repeat is **not** applied during initial assignment; it runs as a swap-optimization pass at the end.
+
+Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-shuffle-api-nest/src/modules/party/party.service.ts)):
+
+1. Randomize input order (`shuffleArray(characters)`).
+2. Partition characters by role into `{ tanks, healers, melees, dists, brs, bls }`.
+3. **Special path**: if there are zero tanks and zero healers, run `createBalancedDpsOnlyGroups` and return.
+4. Compute `numberOfParties` (see invariant 3) and create empty parties.
+5. Assign **tanks** — one per party, parties chosen in randomized order; spillover creates new parties.
+6. Assign **healers** — one per party, into a random party that has no healer; spillover creates new parties.
+7. Assign **battle-rez** carriers — one per party where possible (utility distribution).
+8. Assign **bloodlust** carriers — one per party where possible.
+9. Assign **CAC** (melee DPS) — one per party that has none, scored by keystone width then iLevel.
+10. Assign **DIST** (ranged DPS) — same as CAC but for ranged.
+11. Distribute remaining DPS into parties with `<5` members; create new parties for any leftover.
+12. Run **anti-repeat optimization** — swap members between parties to reduce pairings repeated from the last 3 shuffles.
+13. Final fallback: `distributeUnassignedPlayers` for anything still unplaced.
 
 ## Invariants
 
@@ -54,7 +74,7 @@ An ordered `Party[]`. Each party has:
 2. **Melee/ranged DPS balance**
    - Each party tries to have **at least one CAC (melee) and one DIST (ranged)**, on a best-effort basis.
    - If a party has no CAC, the algorithm picks the best-fitting melee from remaining melees and adds it. Same logic for DIST with the ranged pool.
-   - "Best fit" here = narrower keystone range, then closest iLevel to the party's reference (same scoring as the keystone matching invariant).
+   - "Best fit" here = narrower keystone range, then closest iLevel to the party's reference iLevel.
    - Not enforced if the pool is exhausted: a party may end up without a CAC or without a DIST when the roster is unbalanced (e.g. 2 melees among 8 DPS over 3 parties).
 
 3. **Party count**
@@ -71,17 +91,18 @@ An ordered `Party[]`. Each party has:
 
 6. **Keystone matching**
    - Within a party, members' keystone ranges should overlap.
-   - Strict matching (full overlap) is preferred; a ±2 fallback tolerance applies when strict matching is impossible.
-   - When multiple candidates fit, the one with the **narrower** keystone range is preferred (more flexible to merge into).
+   - Strict matching is preferred: the candidate's keystone range fully covers the party's current range. A ±2 fallback tolerance applies when no candidate covers fully.
+   - When multiple candidates fit, the one with the **narrower** keystone range (max − min) is preferred — it's the most committed to a tight range and easier to merge into.
 
 7. **Item-level tie-break**
-   - Among candidates that satisfy role + keystone constraints, the one with `iLevel` closest to the party's existing reference level is chosen.
+   - Among candidates with the same keystone score, the one with `iLevel` closest to the party's reference iLevel is chosen. The reference is the iLevel of the party's first-assigned member (typically the tank).
 
 8. **Anti-repeat**
    - The last 3 shuffles for the event are read from Redis and used to score candidate assignments; pairings that recently happened are penalized (recency-weighted).
 
-9. **Determinism**
-   - Given the same inputs and the same shuffle history, the algorithm produces the same result. Randomness, if any, is seeded by the input ordering.
+9. **Non-determinism**
+   - The algorithm uses `Math.random` (via `shuffleArray` between every phase, and a random pick when assigning healers). Two calls with the **same inputs and same shuffle history** can produce **different outputs**.
+   - Tests must therefore assert on structural invariants (role caps, party count, presence of melee/ranged, etc.), never on which character lands in which specific party.
 
 ## Edge cases
 
@@ -106,3 +127,6 @@ An ordered `Party[]`. Each party has:
 
 - Behavior when the same character has both `battleRez=true` and `bloodLust=true` is not explicitly specified.
 - Exact tie-breaking when two candidates have identical iLevel and keystone width is implementation-defined.
+- Whether a tank with `battleRez=true` (or `bloodLust=true`) counts as fulfilling the BR/BL slot for its party is not verified — current spec assumes only non-tanks fill those slots.
+- **Intent vs code drift on scoring order.** The intended priority order, per the algorithm's author, is: composition (tanks/healers/BR/BL) → melee+ranged variety → anti-repeat → iLevel → keystone. The current code ranks candidates by **keystone width first, then iLevel** during BR/BL/CAC/DIST assignment, and applies anti-repeat only as a final swap pass. This spec describes the code as-is; aligning code to intent is tracked as a separate follow-up.
+- Anti-repeat is a post-pass swap optimization, not a constraint during initial assignment. Tests cannot assume "characters that were grouped last shuffle will not be grouped this shuffle" — only that *swaps* are biased toward separating them when other constraints allow.
