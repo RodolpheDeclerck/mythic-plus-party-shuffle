@@ -21,40 +21,47 @@ Ordered. Check off as you go.
 - [ ] Test: same input — every party has ≤3 DPS.
 - [ ] Test: same input — every party has size ≤ 5.
 
-## 3. Party count formula (invariant 2)
+## 3. Melee/ranged DPS balance (invariant 2)
+
+- [ ] Test: 2 parties, 2 CAC and 2 DIST in the pool → each party ends up with ≥1 CAC and ≥1 DIST.
+- [ ] Test: 2 parties, 1 CAC and 3 DIST in the pool → the CAC lands in one party (best-fitting), the other party stays CAC-less rather than borrowing a DIST.
+- [ ] Test: among 2 candidate melees with the same keystone range, the one with iLevel closer to the party's reference is chosen.
+- [ ] Test: among 2 candidate melees, the one with the **narrower** keystone range is preferred over the one with a wider range.
+
+## 4. Party count formula (invariant 3)
 
 - [ ] Test: 3 tanks, 2 healers, 5 DPS → party count = 3 (driven by tanks).
 - [ ] Test: 1 tank, 4 healers, 0 DPS → party count = 4 (driven by healers).
 - [ ] Test: 2 tanks, 2 healers, 11 DPS → party count = 3 (driven by ceil(15/5)).
 - [ ] Test: 0 tanks, 0 healers, 7 DPS → all-DPS mode, ≤2 parties of ≤5.
 
-## 4. Tank/healer assignment order (invariant 3)
+## 5. Tank/healer assignment order (invariant 4)
 
 - [ ] Test: with 2 tanks and 1 healer, exactly the parties getting a tank also gain a healer (not a fresh party).
 - [ ] Test: with 1 tank and 0 healers, only the first party gets a tank; remaining parties are tank-less.
 
-## 5. Utility distribution (invariant 4)
+## 6. Utility distribution (invariant 5)
 
 - [ ] Test: 2 parties, 2 BR-capable DPS, no other DPS → each party gets one BR-capable.
 - [ ] Test: 2 parties, 1 BL-capable DPS, plenty of others → the BL-capable lands in one of the parties.
 - [ ] Test: BR/BL on a tank does NOT count as fulfilling the BR/BL slot for the party (utilities only assigned to non-tanks per spec).
 
-## 6. Keystone matching (invariant 5)
+## 7. Keystone matching (invariant 6)
 
 - [ ] Test: party with members in [10–15], candidate in [12–14] is preferred over candidate in [8–9].
 - [ ] Test: when no candidate strictly overlaps, a candidate within ±2 of the party range is acceptable.
 - [ ] Test: among two equally-eligible candidates, the one with the narrower keystone range is preferred.
 
-## 7. iLevel tie-break (invariant 6)
+## 8. iLevel tie-break (invariant 7)
 
 - [ ] Test: among candidates passing role + keystone, the one with `iLevel` closest to the party's reference iLevel is chosen.
 
-## 8. Anti-repeat (invariant 7)
+## 9. Anti-repeat (invariant 8)
 
 - [ ] Test: with a mocked history showing characters A and B were grouped in the last shuffle, the algorithm prefers separating them on the next shuffle when a viable alternative exists.
 - [ ] Test: with empty history, no anti-repeat penalty influences the result (smoke test).
 
-## 9. Edge cases
+## 10. Edge cases
 
 - [ ] Test: empty roster → `[]`.
 - [ ] Test: 1 character → 1 party of 1.
@@ -62,14 +69,14 @@ Ordered. Check off as you go.
 - [ ] Test: 6 tanks, no healers, no DPS → 6 parties of 1 tank each (party count driven by tanks).
 - [ ] Test: keystone spread > 4 levels in a single party → does not throw, party is still produced (warning is implementation, not asserted).
 
-## 10. Coverage threshold
+## 11. Coverage threshold
 
 - [ ] Run `npm run test:cov -w mythic-plus-party-shuffle-api-nest` locally.
 - [ ] Note the new coverage on `party.service.ts` (look at the per-file row).
 - [ ] Add a per-file `coverageThreshold` entry in `mythic-plus-party-shuffle-api-nest/package.json` for `**/party.service.ts` set to **the measured value minus 2 points** (ratchet).
 - [ ] Do **not** raise the global threshold here — that's a separate PR scope.
 
-## 11. PR
+## 12. PR
 
 - [ ] Update `docs/plans/README.md` with a row for this change (per CLAUDE.md PR checklist).
 - [ ] Add `docs/plans/12-shuffle-unit-tests.md` mirroring the OpenSpec proposal for traceability with the existing convention.
