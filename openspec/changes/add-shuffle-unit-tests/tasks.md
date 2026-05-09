@@ -48,7 +48,8 @@ Ordered. Check off as you go.
 
 - [ ] Test: 2 parties, 2 BR-capable DPS, no other DPS → each party gets one BR-capable.
 - [ ] Test: 2 parties, 1 BL-capable DPS, plenty of others → the BL-capable lands in one of the parties.
-- [ ] Test: BR/BL on a tank does NOT count as fulfilling the BR/BL slot for the party (utilities only assigned to non-tanks per spec).
+- [ ] Test: a tank with `battleRez=true` (first member) prevents the algorithm from adding another BR carrier to that party.
+- [ ] Test: a healer with `battleRez=true` (members[1]) does **not** prevent another BR from being added — the code only checks `members[0]`. This documents the current intent-vs-code gap from the spec's Known gaps section; the test asserts the *current* shallow behavior, not the intended behavior.
 
 ## 7. Keystone matching (invariant 6)
 

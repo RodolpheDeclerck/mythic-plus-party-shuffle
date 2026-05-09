@@ -87,7 +87,10 @@ Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-s
    - Healers are assigned only to parties without a healer, until healers are exhausted.
 
 5. **Utility distribution (battle rez & bloodlust)**
-   - Among non-tanks, the algorithm tries to place ≥1 battle-rez and ≥1 bloodlust character in every party where possible, before filling with regular DPS.
+   - The algorithm tries to ensure each party has access to a battle-rez and a bloodlust.
+   - **A party is considered BR-satisfied if its first member has `battleRez=true`** (typically the tank). In that case no further BR is added. Same logic for BL.
+   - Otherwise, a non-tank carrier of the utility is added, scored by keystone width then iLevel proximity to the party's reference iLevel.
+   - "First member" check means: a healer or DPS with the utility, assigned later, does **not** prevent the algorithm from also adding another carrier — see Known gaps.
 
 6. **Keystone matching**
    - Within a party, members' keystone ranges should overlap.
@@ -110,7 +113,8 @@ Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-s
 | ----------------------------------- | ----------------------------------------------------------------------------------- |
 | Empty roster                        | Returns `[]`.                                                                       |
 | 1 character                         | Returns 1 party of 1 member.                                                        |
-| Fewer characters than 5             | Returns 1 party with all of them, role caps still respected.                        |
+| Fewer characters than 5, mixed roles | Returns 1 party with all of them.                                                  |
+| Fewer characters than 5, multi-tank  | Role cap (≤1 tank/party) drives the count: e.g. 4 tanks → 4 parties of 1 tank each. |
 | All-DPS roster                      | Groups DPS into parties of ≤5; anti-repeat and keystone matching still applied.     |
 | More than 5 tanks                   | One party per tank (party count driven by tank count).                              |
 | Keystone spread > 4 levels in party | Logged as a warning; **not** rejected.                                              |
@@ -127,6 +131,6 @@ Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-s
 
 - Behavior when the same character has both `battleRez=true` and `bloodLust=true` is not explicitly specified.
 - Exact tie-breaking when two candidates have identical iLevel and keystone width is implementation-defined.
-- Whether a tank with `battleRez=true` (or `bloodLust=true`) counts as fulfilling the BR/BL slot for its party is not verified — current spec assumes only non-tanks fill those slots.
+- **BR/BL satisfaction check is shallow.** The code only checks `party.members[0]` (typically the tank) when deciding if a party is already BR/BL-covered. If a *healer* or *DPS* assigned later happens to have BR or BL, the algorithm doesn't notice and adds another carrier anyway. Intent is "anyone with the utility satisfies the slot"; current code is "only the first-assigned member counts". Reconcile in a follow-up.
 - **Intent vs code drift on scoring order.** The intended priority order, per the algorithm's author, is: composition (tanks/healers/BR/BL) → melee+ranged variety → anti-repeat → iLevel → keystone. The current code ranks candidates by **keystone width first, then iLevel** during BR/BL/CAC/DIST assignment, and applies anti-repeat only as a final swap pass. This spec describes the code as-is; aligning code to intent is tracked as a separate follow-up.
 - Anti-repeat is a post-pass swap optimization, not a constraint during initial assignment. Tests cannot assume "characters that were grouped last shuffle will not be grouped this shuffle" — only that *swaps* are biased toward separating them when other constraints allow.
