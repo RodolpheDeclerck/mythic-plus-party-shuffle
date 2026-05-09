@@ -87,10 +87,9 @@ Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-s
    - Healers are assigned only to parties without a healer, until healers are exhausted.
 
 5. **Utility distribution (battle rez & bloodlust)**
-   - The algorithm tries to ensure each party has access to a battle-rez and a bloodlust.
-   - **A party is considered BR-satisfied if its first member has `battleRez=true`** (typically the tank). In that case no further BR is added. Same logic for BL.
-   - Otherwise, a non-tank carrier of the utility is added, scored by keystone width then iLevel proximity to the party's reference iLevel.
-   - "First member" check means: a healer or DPS with the utility, assigned later, does **not** prevent the algorithm from also adding another carrier — see Known gaps.
+   - **Battle-rez (BR):** the algorithm checks `members[0].battleRez` (typically the tank). If the first member has BR, the slot is considered satisfied and no further BR carrier is added. Otherwise a non-tank carrier with `battleRez=true` is added, scored by keystone width then iLevel proximity.
+   - **Bloodlust (BL):** the algorithm performs **no existence check** at all. A BL carrier is added to every non-empty party regardless of whether any existing member already has BL. This is asymmetric with BR — see Known gaps.
+   - Carriers are picked from non-tanks: the candidate pools (`brs`, `bls`) are pre-filtered, but the assignment loop draws from the `HEAL`/`DIST`/`CAC` roles only.
 
 6. **Keystone matching**
    - Within a party, members' keystone ranges should overlap.
@@ -131,6 +130,9 @@ Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-s
 
 - Behavior when the same character has both `battleRez=true` and `bloodLust=true` is not explicitly specified.
 - Exact tie-breaking when two candidates have identical iLevel and keystone width is implementation-defined.
-- **BR/BL satisfaction check is shallow.** The code only checks `party.members[0]` (typically the tank) when deciding if a party is already BR/BL-covered. If a *healer* or *DPS* assigned later happens to have BR or BL, the algorithm doesn't notice and adds another carrier anyway. Intent is "anyone with the utility satisfies the slot"; current code is "only the first-assigned member counts". Reconcile in a follow-up.
+- **BR/BL satisfaction is asymmetric and incomplete.** Intent is "any member with the utility satisfies the slot, for BR and BL alike". Current code:
+  - **BR**: only `members[0].battleRez` (typically the tank) is checked. A healer or DPS carrying BR does not prevent another BR from being added.
+  - **BL**: no existence check at all — a BL carrier is always added to a non-empty party, even if `members[0]` (or any other member) already has bloodlust.
+  Reconcile in a follow-up by introducing a single helper `partyHas(party, 'BR' | 'BL')` that scans all members.
 - **Intent vs code drift on scoring order.** The intended priority order, per the algorithm's author, is: composition (tanks/healers/BR/BL) → melee+ranged variety → anti-repeat → iLevel → keystone. The current code ranks candidates by **keystone width first, then iLevel** during BR/BL/CAC/DIST assignment, and applies anti-repeat only as a final swap pass. This spec describes the code as-is; aligning code to intent is tracked as a separate follow-up.
 - Anti-repeat is a post-pass swap optimization, not a constraint during initial assignment. Tests cannot assume "characters that were grouped last shuffle will not be grouped this shuffle" — only that *swaps* are biased toward separating them when other constraints allow.

@@ -48,8 +48,10 @@ Ordered. Check off as you go.
 
 - [ ] Test: 2 parties, 2 BR-capable DPS, no other DPS → each party gets one BR-capable.
 - [ ] Test: 2 parties, 1 BL-capable DPS, plenty of others → the BL-capable lands in one of the parties.
-- [ ] Test: a tank with `battleRez=true` (first member) prevents the algorithm from adding another BR carrier to that party.
-- [ ] Test: a healer with `battleRez=true` (members[1]) does **not** prevent another BR from being added — the code only checks `members[0]`. This documents the current intent-vs-code gap from the spec's Known gaps section; the test asserts the *current* shallow behavior, not the intended behavior.
+- [ ] Test (BR): a tank with `battleRez=true` (first member) prevents the algorithm from adding another BR carrier to that party.
+- [ ] Test (BR): a healer with `battleRez=true` (members[1]) does **not** prevent another BR from being added — code only checks `members[0]`. Documents the BR shallow-check gap; asserts current behavior, not intent.
+- [ ] Test (BL): a tank with `bloodLust=true` (first member) does **not** prevent another BL carrier from being added — BL has no existence check at all. Documents the BL no-check gap; asserts current behavior, not intent.
+- [ ] Test (BL): with N parties and N+1 bloodlust-capable characters in the pool, every non-empty party still receives a BL carrier (subject to availability), since BL is added unconditionally.
 
 ## 7. Keystone matching (invariant 6)
 
