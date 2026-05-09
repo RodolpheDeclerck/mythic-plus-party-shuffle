@@ -48,49 +48,39 @@ describe('useFetchCharacters', () => {
     expect(result.current.loading).toBe(true);
   });
 
-  it(
-    'sets charactersFetchErrorCode after all retries are exhausted',
-    async () => {
-      mockAxiosGet.mockRejectedValue(new Error('Network error'));
+  it('sets charactersFetchErrorCode after all retries are exhausted', async () => {
+    mockAxiosGet.mockRejectedValue(new Error('Network error'));
 
-      const { result } = renderHook(() => useFetchCharacters('ABC'));
+    const { result } = renderHook(() => useFetchCharacters('ABC'));
 
-      await waitFor(
-        () => expect(result.current.loading).toBe(false),
-        { timeout: 6000 },
-      );
+    await waitFor(() => expect(result.current.loading).toBe(false), {
+      timeout: 6000,
+    });
 
-      expect(result.current.charactersFetchErrorCode).toBe(
-        CHARACTERS_FETCH_FAILED,
-      );
-      expect(result.current.characters).toEqual([]);
-      // initial attempt + 2 retries
-      expect(mockAxiosGet).toHaveBeenCalledTimes(3);
-    },
-    10000,
-  );
+    expect(result.current.charactersFetchErrorCode).toBe(
+      CHARACTERS_FETCH_FAILED,
+    );
+    expect(result.current.characters).toEqual([]);
+    // initial attempt + 2 retries
+    expect(mockAxiosGet).toHaveBeenCalledTimes(3);
+  }, 10000);
 
-  it(
-    'succeeds on a later retry and clears the error',
-    async () => {
-      const chars = [mkChar(42)];
-      mockAxiosGet
-        .mockRejectedValueOnce(new Error('first fail'))
-        .mockResolvedValueOnce({ data: chars });
+  it('succeeds on a later retry and clears the error', async () => {
+    const chars = [mkChar(42)];
+    mockAxiosGet
+      .mockRejectedValueOnce(new Error('first fail'))
+      .mockResolvedValueOnce({ data: chars });
 
-      const { result } = renderHook(() => useFetchCharacters('ABC'));
+    const { result } = renderHook(() => useFetchCharacters('ABC'));
 
-      await waitFor(
-        () => expect(result.current.loading).toBe(false),
-        { timeout: 4000 },
-      );
+    await waitFor(() => expect(result.current.loading).toBe(false), {
+      timeout: 4000,
+    });
 
-      expect(result.current.characters).toEqual(chars);
-      expect(result.current.charactersFetchErrorCode).toBeNull();
-      expect(mockAxiosGet).toHaveBeenCalledTimes(2);
-    },
-    8000,
-  );
+    expect(result.current.characters).toEqual(chars);
+    expect(result.current.charactersFetchErrorCode).toBeNull();
+    expect(mockAxiosGet).toHaveBeenCalledTimes(2);
+  }, 8000);
 
   it('does not update state after unmount', async () => {
     let resolve!: (v: unknown) => void;
