@@ -122,8 +122,6 @@ describe('useEventCharactersRefresh', () => {
     });
     // stays CHARACTERS_FETCH_FAILED but was reset and re-set mid-call
     expect(result.current.errorState).toBe(CHARACTERS_FETCH_FAILED);
-    await waitFor(() =>
-      expect(mockFetch).toHaveBeenCalledTimes(2),
-    );
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
   });
 });
