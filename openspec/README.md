@@ -1,82 +1,104 @@
-# OpenSpec — POC
+# OpenSpec
 
-This directory is a **proof-of-concept** of the [OpenSpec](https://github.com/Fission-AI/OpenSpec) convention applied to this project. It is being evaluated against our existing `docs/plans/NN-*.md` workflow.
+[OpenSpec](https://github.com/Fission-AI/OpenSpec) is **adopted** as the spec-driven workflow for this repo. The CLI (`@fission-ai/openspec`) is installed as a root devDependency.
 
-**Status:** experimental. Do not assume this convention is permanent. After the first end-to-end use (see `changes/add-shuffle-unit-tests/`), we decide: adopt, abandon, or hybrid.
+## Status
+
+| Aspect | State |
+|---|---|
+| Adoption decision | ✅ Adopted (after POC retro, PR #33 + this PR) |
+| CLI integrated | ✅ `@fission-ai/openspec@^1.3.1` in root `devDependencies` |
+| Coexistence with `docs/plans/` | Both kept (see [Coexistence](#coexistence-with-docsplans)) |
+| AI tool bindings | Not installed yet (would be `openspec init --tools claude` if needed) |
 
 ## Layout
 
 ```
 openspec/
 ├── README.md                          ← this file
-├── specs/<capability>/spec.md         ← stable contract of a capability (current state)
-└── changes/<change-id>/               ← one folder per proposed change
-    ├── proposal.md                    ← what & why
-    ├── tasks.md                       ← ordered TODO
-    └── design.md                      ← optional, technical decisions
+├── specs/<capability>/spec.md         ← stable contract of each capability (canonical OpenSpec format)
+└── changes/
+    ├── <change-id>/                   ← active change proposals
+    │   ├── proposal.md                ← why + what changes
+    │   ├── tasks.md                   ← ordered TODO
+    │   ├── design.md                  ← optional, technical decisions
+    │   └── specs/<capability>/spec.md ← deltas (## ADDED / MODIFIED / REMOVED / RENAMED Requirements)
+    └── archive/<YYYY-MM-DD-change-id>/ ← shipped changes (auto-created by `openspec archive`)
 ```
 
-## Why try this in addition to `docs/plans/`?
+## Canonical format
 
-| Concern                              | `docs/plans/NN-*.md`           | OpenSpec                                       |
-| ------------------------------------ | ------------------------------ | ---------------------------------------------- |
-| One-shot plan for a change           | ✅ already works                | ✅ `changes/<id>/proposal.md`                  |
-| Stable description of "what X does"  | ❌ scattered in code/README    | ✅ `specs/<capability>/spec.md`                |
-| Separating proposal from tasks       | ❌ mixed in same file          | ✅ `proposal.md` + `tasks.md`                  |
-| Archiving merged proposals           | ❌ plans accumulate forever    | ✅ convention archives by moving folder        |
-| Tooling / agent-friendliness         | ⚠️ free-form                    | ✅ structured, can be read by an OpenSpec CLI  |
+Specs and changes follow the OpenSpec schema. Validation runs via `npm run openspec:validate`.
 
-The CLI (`@fission-ai/openspec`) is **not** installed here — pure-convention only. If we adopt, the CLI gets added in a follow-up PR. See [CLI integration roadmap](#cli-integration-roadmap) below.
+**Spec file** (`specs/<capability>/spec.md`):
 
-## How a change runs
+```markdown
+## Purpose
+[brief statement of what the capability does]
 
-1. Create `changes/<change-id>/proposal.md` describing what and why.
-2. Create `tasks.md` with the ordered TODO list to ship the change.
-3. Optionally update or create `specs/<capability>/spec.md` to describe the **target** state.
-4. Implement the change.
-5. When merged, the folder under `changes/` is moved to `changes/archive/<change-id>/` (manual until the CLI is installed).
+## Requirements
 
-## Comparison with `docs/plans/`
+### Requirement: <Clear normative statement using SHALL/MUST>
+[longer text if needed]
 
-`docs/plans/NN-*.md` continues to live alongside this POC. They cover the same ground but in a single file. The POC is meant to surface in practice whether OpenSpec's split between *capability spec* and *change proposal* gives enough value to justify the extra structure.
-
-## CLI integration roadmap
-
-The CLI (`@fission-ai/openspec`) is deliberately not installed during the POC, to avoid coupling the convention evaluation with a tooling evaluation. Integration triggers and shape:
-
-**Trigger conditions (all must be true):**
-
-1. `chore/openspec-poc` (PR #33) — the scaffold — is merged.
-2. The first dogfooded change (`changes/add-shuffle-unit-tests`) has shipped via a separate PR.
-3. A retrospective on that PR concludes with **adopt** or **hybrid** (not **abandon**).
-
-**Shape of the integration PR (~10 lines):**
-
-```jsonc
-// package.json (root)
-"devDependencies": {
-  "@fission-ai/openspec": "^X.X.X"
-},
-"scripts": {
-  "openspec:validate": "openspec validate",
-  "openspec:list":     "openspec list",
-  "openspec:archive":  "openspec archive"
-}
+#### Scenario: <Descriptive name>
+- **WHEN** <condition>
+- **THEN** <expected outcome>
 ```
 
-Optionally a CI job that runs `openspec validate` on PRs touching `openspec/`. To be decided at integration time based on whether we've hit a malformed-proposal problem in practice.
+**Change deltas** (`changes/<id>/specs/<capability>/spec.md`):
 
-**What the CLI buys us once integrated:**
+```markdown
+## ADDED Requirements
+### Requirement: <new requirement>
+...
 
-- `openspec validate` — schema check on `proposal.md` / `tasks.md` / `spec.md` (prevents free-form drift).
-- `openspec archive` — automated move from `changes/<id>/` to `changes/archive/<id>/` after merge.
-- `openspec list` / `openspec view` — quick inspection without opening files manually.
-- `openspec diff` — compare a capability spec across versions.
+## MODIFIED Requirements
+### Requirement: <existing requirement, full updated block>
+...
 
-**What stays manual either way:**
+## REMOVED Requirements
+### Requirement: <name>
+**Reason**: ...
+**Migration**: ...
+```
 
-- Writing the markdown content.
-- Deciding when a change is ready to merge.
-- Updating `docs/plans/` if we keep the hybrid mode.
+Critical: scenarios MUST use exactly 4 hashtags (`####`). 3 hashtags or bullets fail silently.
 
-Until the trigger conditions are met, archiving and validation are manual.
+For detailed schemas run `npx openspec instructions <artifact> --change <change-id>` (artifacts: `proposal`, `specs`, `design`, `tasks`).
+
+## Useful commands
+
+| Command | What it does |
+|---|---|
+| `npm run openspec` | Interactive CLI menu |
+| `npm run openspec:list` | List active changes |
+| `npm run openspec:validate` | Validate all specs and active changes (`--strict`) |
+| `npm run openspec:archive` | Move a completed change to `archive/`. Use `--skip-specs` if the change has no delta files. |
+| `npx openspec list --specs` | List capability specs |
+| `npx openspec show <name>` | Inspect a spec or change |
+| `npx openspec instructions specs --change <id>` | Get a fully-detailed prompt for writing the specs artifact of a change |
+
+## Coexistence with `docs/plans/`
+
+`docs/plans/NN-*.md` is the legacy plan format and continues to live alongside OpenSpec. Convention going forward:
+
+- **Specs** of a capability (stable contract) live in `openspec/specs/<capability>/spec.md`. Single source of truth.
+- **Change proposals** live in `openspec/changes/<id>/`. The `proposal.md` is the primary discussion artifact.
+- **`docs/plans/`** continues to hold higher-level rollout plans (CI hardening, migrations, etc.) that are not tied to a single capability or that predate OpenSpec. For new capability-level work, prefer OpenSpec.
+- A change MAY have a mirror entry in `docs/plans/` for traceability when it's relevant to onboarding or to the README; this is optional, not required.
+
+## Workflow for a new change
+
+1. Create the folder: `openspec/changes/<change-id>/`.
+2. Write `proposal.md` (Why + What Changes; see `npx openspec instructions proposal --change <id>` for the strict schema).
+3. Write `specs/<capability>/spec.md` with delta operations (ADDED / MODIFIED / REMOVED / RENAMED).
+4. Write `tasks.md` (ordered TODO).
+5. Validate: `npm run openspec:validate`.
+6. Implement, open PR, merge.
+7. After merge: `npm run openspec:archive <change-id>`. The CLI moves the folder to `archive/YYYY-MM-DD-<change-id>/` and (if deltas exist) applies them to `openspec/specs/`.
+
+## History
+
+- **PR #33** — POC scaffold + first dogfooded change (`add-shuffle-unit-tests`). Captured 7 spec/code drifts.
+- **This PR** — CLI integration, canonical-format refactor of `openspec/specs/shuffle/spec.md`, archive of the POC change.

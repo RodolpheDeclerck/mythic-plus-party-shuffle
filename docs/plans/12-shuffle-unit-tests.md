@@ -2,7 +2,7 @@
 
 **Fichier :** `docs/plans/12-shuffle-unit-tests.md`
 
-Plan miroir de [`openspec/changes/add-shuffle-unit-tests/`](../../openspec/changes/add-shuffle-unit-tests/). Maintenu en parallèle pendant le POC OpenSpec pour respecter la règle CLAUDE.md ("plan dans `docs/plans/`").
+Plan miroir de l'OpenSpec change archivé [`openspec/changes/archive/2026-05-18-add-shuffle-unit-tests/`](../../openspec/changes/archive/2026-05-18-add-shuffle-unit-tests/). Maintenu pour respecter la règle CLAUDE.md ("plan dans `docs/plans/`"). Après l'adoption d'OpenSpec, les nouveaux changes peuvent vivre uniquement sous `openspec/` — voir [`openspec/README.md`](../../openspec/README.md).
 
 ## État
 
