@@ -63,9 +63,16 @@ Ordered. Check off as you go.
 
 - [ ] Test: among candidates passing role + keystone, the one with `iLevel` closest to the party's reference iLevel is chosen.
 
-## 9. Anti-repeat (invariant 8)
+## 9. Anti-repeat (invariant 8) — DEFERRED to follow-up PR
 
-Anti-repeat is a **post-pass swap optimization**, not a constraint during initial assignment. Tests should reflect that.
+Anti-repeat is a **post-pass swap optimization**, not a constraint during initial assignment. Tests are non-trivial:
+
+- They require seeded randomness (`jest.spyOn(Math, 'random')` + stubbing `shuffleArray`) or statistical testing across N runs.
+- The optimizer's exact swap logic (`optimizeGlobalDistribution`, `calculateRedundancyScore`) is intertwined with the broader algorithm and harder to isolate.
+
+For the POC PR we ship 26 tests covering invariants 1–7 and edge cases (>75% coverage on `party.service.ts`). Anti-repeat tests are intentionally deferred so the POC can land and we can evaluate the OpenSpec workflow before sinking more time into the trickier parts.
+
+Deferred tests to add later:
 
 - [ ] Test: with a mocked history showing A and B were grouped repeatedly in the last 3 shuffles, **across N seeded runs** the proportion of resulting parties pairing A and B is lower than with empty history (statistical test, requires approach B with seeded randomness).
 - [ ] Test: with empty history, the optimizer pass is a no-op or near no-op on a roster that already satisfies all other constraints (smoke).

@@ -78,9 +78,10 @@ Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-s
    - Not enforced if the pool is exhausted: a party may end up without a CAC or without a DIST when the roster is unbalanced (e.g. 2 melees among 8 DPS over 3 parties).
 
 3. **Party count**
-   - When at least one tank or one healer exists:
+   - **Initial allocation** when at least one tank or one healer exists:
      `parties = max(1, tanks.length, healers.length, ceil(characters.length / 5))`.
-   - Otherwise (all-DPS roster): the algorithm groups DPS into parties of ≤5.
+   - **Final count may be higher**: after the initial allocation, any DPS that couldn't be placed in an existing party (because role-spreading via `addignDistAndMelees` doesn't always achieve maximum density) is pushed into new parties by `createGroupForRemainingDPS`. So tests should assert `parties.length >= max(1, tanks, healers, ceil(n/5))`, not strict equality.
+   - All-DPS roster (no tanks, no healers): the algorithm groups DPS into parties of ≤5 directly.
 
 4. **Tank/healer assignment**
    - Tanks are assigned first, one per party, until tanks are exhausted.
@@ -136,3 +137,5 @@ Order of phases (see [`PartyService.shuffleGroups`](../../../mythic-plus-party-s
   Reconcile in a follow-up by introducing a single helper `partyHas(party, 'BR' | 'BL')` that scans all members.
 - **Intent vs code drift on scoring order.** The intended priority order, per the algorithm's author, is: composition (tanks/healers/BR/BL) → melee+ranged variety → anti-repeat → iLevel → keystone. The current code ranks candidates by **keystone width first, then iLevel** during BR/BL/CAC/DIST assignment, and applies anti-repeat only as a final swap pass. This spec describes the code as-is; aligning code to intent is tracked as a separate follow-up.
 - Anti-repeat is a post-pass swap optimization, not a constraint during initial assignment. Tests cannot assume "characters that were grouped last shuffle will not be grouped this shuffle" — only that *swaps* are biased toward separating them when other constraints allow.
+- **Crash on empty party in addignDistAndMelees** (line 457). When the initial party count (driven by `ceil(n/5)`) is higher than `tanks.length + healers.length`, and random healer placement collides with a tank's party, a party can stay empty after the tank/healer phase. The DPS-distribution phase then dereferences `party.members[0].iLevel` and throws. Reproducible only under specific RNG sequences. Captured here because the unit tests surfaced it.
+- **Melee/ranged balance bug in addignDistAndMelees**. The reduce that picks the "best" melee (or dist) iterates over the full `melees` pool *without* pre-filtering already-used characters. The same "best" candidate is elected for every party. After the first party takes it, subsequent parties hit `usedCharacters.has(meleeToAdd.id)` and add nothing. So with 2 parties and 2 CAC available, only the first party ever gets a CAC; the second party falls back to whatever `completePartiesWithRemainingDPS` happens to push. Consequence: invariant 2's "each party tries to have ≥1 CAC and ≥1 DIST" is degraded to "the *first* party tends to have both roles; later parties may have neither". Fix is one line: filter `melees`/`dists` by `!usedCharacters.has(...)` before reducing.

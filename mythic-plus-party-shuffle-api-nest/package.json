@@ -94,10 +94,16 @@
     "coverageDirectory": "../coverage",
     "coverageThreshold": {
       "global": {
-        "statements": 5,
-        "branches": 4,
-        "functions": 3,
-        "lines": 5
+        "statements": 9,
+        "branches": 6,
+        "functions": 6,
+        "lines": 8
+      },
+      "**/party.service.ts": {
+        "statements": 70,
+        "branches": 65,
+        "functions": 75,
+        "lines": 70
       }
     },
     "testEnvironment": "node"
