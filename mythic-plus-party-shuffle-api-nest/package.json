@@ -94,16 +94,70 @@
     "coverageDirectory": "../coverage",
     "coverageThreshold": {
       "global": {
-        "statements": 9,
-        "branches": 6,
-        "functions": 6,
-        "lines": 8
+        "statements": 65,
+        "branches": 35,
+        "functions": 48,
+        "lines": 65
       },
       "**/party.service.ts": {
         "statements": 70,
         "branches": 65,
         "functions": 75,
         "lines": 70
+      },
+      "**/auth.service.ts": {
+        "statements": 95,
+        "branches": 95,
+        "functions": 95,
+        "lines": 95
+      },
+      "**/character.service.ts": {
+        "statements": 85,
+        "branches": 78,
+        "functions": 85,
+        "lines": 88
+      },
+      "**/event.service.ts": {
+        "statements": 78,
+        "branches": 65,
+        "functions": 60,
+        "lines": 80
+      },
+      "**/user.service.ts": {
+        "statements": 90,
+        "branches": 90,
+        "functions": 95,
+        "lines": 90
+      },
+      "**/party.facade.ts": {
+        "statements": 95,
+        "branches": 90,
+        "functions": 95,
+        "lines": 95
+      },
+      "**/jwt.strategy.ts": {
+        "statements": 90,
+        "branches": 80,
+        "functions": 95,
+        "lines": 90
+      },
+      "**/jwt-auth.guard.ts": {
+        "statements": 95,
+        "branches": 85,
+        "functions": 95,
+        "lines": 95
+      },
+      "**/event-admin.guard.ts": {
+        "statements": 95,
+        "branches": 90,
+        "functions": 95,
+        "lines": 95
+      },
+      "**/auth-rate-limit.guard.ts": {
+        "statements": 88,
+        "branches": 60,
+        "functions": 95,
+        "lines": 88
       }
     },
     "testEnvironment": "node"
