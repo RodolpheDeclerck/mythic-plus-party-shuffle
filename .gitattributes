@@ -1,0 +1,15 @@
+# Normalize line endings: store everything as LF in git.
+# Kills phantom CRLF<->LF "modified" diffs on Windows / OneDrive multi-PC setups.
+* text=auto eol=lf
+
+# Binary files: never touch their bytes.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
