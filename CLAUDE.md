@@ -12,6 +12,7 @@ L'utilisateur travaille sur ce projet depuis **plusieurs PC différents**. Cons�
 - **Settings Claude** : privilégier `.claude/settings.json` (versionné) plutôt que `.claude/settings.local.json` pour toute config qui doit être partagée entre PC.
 - **État local non versionné** : `.env`, `node_modules`, DB locale Postgres/Redis, builds, worktrees, branches locales peuvent différer d'un PC à l'autre. Vérifier leur existence avant de s'appuyer dessus.
 - **Avant de référencer un état "précédent"** (fichier local, branche, mémoire), vérifier qu'il est présent sur la machine actuelle.
+- **Slash commands OpenSpec** : les commandes `/opsx:*` (`propose`, `apply`, `archive`, `explore`) et les skills associés sont générés localement dans `.claude/commands/` et `.claude/skills/`, dossiers **git-ignored**. Ils n'existent donc pas par défaut sur une nouvelle machine. Pour les (re)générer : `npx openspec init --tools claude`, puis redémarrer Claude Code. (NB : namespace `/opsx:` depuis OpenSpec ≥1.3.x, anciennement `/openspec:`.)
 
 ## PR Checklist
 
