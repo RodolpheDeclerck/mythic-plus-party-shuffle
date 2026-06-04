@@ -39,6 +39,21 @@ export default () => ({
     audience: process.env.AUTH_AUDIENCE,
   },
 
+  // Auth0 Token Vault — federated Battle.net access token exchange
+  tokenVault: {
+    clientId: process.env.TOKEN_VAULT_CLIENT_ID,
+    clientSecret: process.env.TOKEN_VAULT_CLIENT_SECRET,
+    connection: process.env.TOKEN_VAULT_CONNECTION || 'battlenet',
+  },
+
+  // Blizzard Profile API (Retail, US region for now)
+  blizzard: {
+    region: process.env.BLIZZARD_REGION || 'us',
+    apiHost: process.env.BLIZZARD_API_HOST || 'https://us.api.blizzard.com',
+    namespace: process.env.BLIZZARD_NAMESPACE || 'profile-us',
+    locale: process.env.BLIZZARD_LOCALE || 'en_US',
+  },
+
   // Configuration CORS
   cors: {
     origin: process.env.CORS_ORIGIN,

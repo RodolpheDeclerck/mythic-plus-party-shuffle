@@ -49,6 +49,22 @@ JWT authentication paths do **not** log cookies, `Authorization` headers, or ful
 
 Elsewhere, **`console.*` is avoided** in `src/`: bootstrap, party/character/event controllers and services, and WebSocket code use Nest **`Logger`**. Verbose payloads (request bodies, full event JSON) are logged at **`debug`** so they stay off default production log levels.
 
+## Blizzard integration (Auth0 Token Vault)
+
+Logged-in users can fetch their World of Warcraft roster (Retail, US region) to register a character without retyping it. The backend exchanges the user's Auth0 token for a federated Battle.net access token via **Auth0 Token Vault**, then calls the Blizzard Profile API. No Blizzard token is stored in our database — Auth0 stores and refreshes it.
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `TOKEN_VAULT_CLIENT_ID` | — | Custom API Client id authorized for the federated token-exchange grant |
+| `TOKEN_VAULT_CLIENT_SECRET` | — | Custom API Client secret (never commit) |
+| `TOKEN_VAULT_CONNECTION` | `battlenet` | Auth0 connection name for Battle.net |
+| `BLIZZARD_REGION` | `us` | Blizzard region |
+| `BLIZZARD_API_HOST` | `https://us.api.blizzard.com` | Blizzard Profile API host |
+| `BLIZZARD_NAMESPACE` | `profile-us` | Profile API namespace (Retail US) |
+| `BLIZZARD_LOCALE` | `en_US` | Locale for display names (mapping uses IDs, not names) |
+
+Auth0 setup (dashboard, out of code): set the Battle.net connection to **Connected Accounts for Token Vault** with scope `wow.profile`, and create a **Custom API Client** allowed to call the federated-connection token-exchange grant.
+
 ## Project setup
 
 ```bash
