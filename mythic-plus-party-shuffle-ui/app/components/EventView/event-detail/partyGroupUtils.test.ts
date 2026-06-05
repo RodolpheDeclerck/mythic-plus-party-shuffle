@@ -11,7 +11,13 @@ import {
   getPartyGroupCompositionStatus,
   groupHasBL,
   groupHasRez,
+  adminGroupIlvlBadgeClass,
 } from './partyGroupUtils';
+import {
+  ITEM_LEVEL_TIER_HIGH,
+  ITEM_LEVEL_TIER_MID,
+  ITEM_LEVEL_TIER_LOW,
+} from '@/constants/itemLevels';
 
 /* ------------------------------------------------------------------ */
 /*  Factory                                                            */
@@ -241,5 +247,26 @@ describe('getPartyGroupCompositionStatus', () => {
     expect(comp.hasBloodlust).toBe(false);
     expect(comp.hasBattleRez).toBe(false);
     expect(comp.hasMissing).toBe(true); // missing BL + BR
+  });
+});
+
+describe('adminGroupIlvlBadgeClass', () => {
+  it('uses the high band at and above the high tier', () => {
+    expect(adminGroupIlvlBadgeClass(ITEM_LEVEL_TIER_HIGH)).toContain('text-purple-300');
+    expect(adminGroupIlvlBadgeClass(ITEM_LEVEL_TIER_HIGH + 10)).toContain('text-purple-300');
+  });
+
+  it('uses the mid band between mid and high tiers', () => {
+    expect(adminGroupIlvlBadgeClass(ITEM_LEVEL_TIER_MID)).toContain('text-blue-300');
+    expect(adminGroupIlvlBadgeClass(ITEM_LEVEL_TIER_HIGH - 1)).toContain('text-blue-300');
+  });
+
+  it('uses the low band between low and mid tiers', () => {
+    expect(adminGroupIlvlBadgeClass(ITEM_LEVEL_TIER_LOW)).toContain('text-green-300');
+    expect(adminGroupIlvlBadgeClass(ITEM_LEVEL_TIER_MID - 1)).toContain('text-green-300');
+  });
+
+  it('uses the muted band below the low tier', () => {
+    expect(adminGroupIlvlBadgeClass(ITEM_LEVEL_TIER_LOW - 1)).toContain('text-muted-foreground');
   });
 });

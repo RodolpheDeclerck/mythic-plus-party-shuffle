@@ -35,13 +35,13 @@
 
 ## 6. Frontend — item level bounds
 
-- [ ] 6.1 Widen `ITEM_LEVEL_MIN`/`ITEM_LEVEL_MAX` to current-season WoW values and re-band `ITEM_LEVEL_TIER_*`
-- [ ] 6.2 Review every consumer of `ITEM_LEVEL_*` (register form clamp, roster table coloring) for the new range
-- [ ] 6.3 Unit tests on the tier/coloring function with the new bounds
+- [x] 6.1 Widen `ITEM_LEVEL_MIN`/`ITEM_LEVEL_MAX` to current-season WoW values and re-band `ITEM_LEVEL_TIER_*`
+- [x] 6.2 Review every consumer of `ITEM_LEVEL_*` (register form clamp, roster table coloring) for the new range
+- [x] 6.3 Unit tests on the tier/coloring function with the new bounds
 
 ## 7. Frontend — link Battle.net + picker
 
-- [ ] 7.1 Add proxy routes under `app/api/be/...` and a typed client for `GET /api/blizzard/characters` and `.../:realm/:name` (UI calls only `/api/be/...`)
+- [x] 7.1 Add proxy routes under `app/api/be/...` and a typed client for `GET /api/blizzard/characters` and `.../:realm/:name` (UI calls only `/api/be/...`). Note: the existing `app/api/be/[[...path]]` catch-all already forwards the Auth0 Bearer token, so no new proxy route was needed — added `blizzardClient.ts` + `useBlizzardRoster` hook + types.
 - [ ] 7.2 Add a "Link Battle.net" entry point shown when the roster call returns the not-linked signal
 - [ ] 7.3 Build the character picker starting from the user's v0.vercel export (pasted in at implementation time): keep the v0 JSX/Tailwind, but adapt it to the project — reuse the existing `@/components/ui/*` components (no duplicated Button/Input from the export), replace mock data with the `/api/be/...` client (7.1), route all text through i18n keys (group 8), and align colors with the project's palette. Cover roster list, loading/empty/error states, and per-character enrichment on selection
 - [ ] 7.4 Build the join gate on the event-register screen: route logged-in users to the picker; route not-logged-in users to a Battle.net login screen with a "Join as guest" button below

@@ -3,20 +3,25 @@ import {
   normalizeKeystoneMinOnBlur,
   normalizeKeystoneMaxOnBlur,
 } from './eventRegisterFieldNormalization';
+import { ITEM_LEVEL_MIN, ITEM_LEVEL_MAX } from '@/constants/itemLevels';
+
+const MIN = ITEM_LEVEL_MIN.toString();
+const MAX = ITEM_LEVEL_MAX.toString();
+const IN_RANGE = Math.round((ITEM_LEVEL_MIN + ITEM_LEVEL_MAX) / 2);
 
 describe('normalizeIlvlOnBlur', () => {
   it('uses min when empty', () => {
-    expect(normalizeIlvlOnBlur('')).toBe('240');
+    expect(normalizeIlvlOnBlur('')).toBe(MIN);
   });
 
   it('clamps to item level range', () => {
-    expect(normalizeIlvlOnBlur('200')).toBe('240');
-    expect(normalizeIlvlOnBlur('300')).toBe('290');
-    expect(normalizeIlvlOnBlur('265')).toBe('265');
+    expect(normalizeIlvlOnBlur(String(ITEM_LEVEL_MIN - 50))).toBe(MIN);
+    expect(normalizeIlvlOnBlur(String(ITEM_LEVEL_MAX + 50))).toBe(MAX);
+    expect(normalizeIlvlOnBlur(String(IN_RANGE))).toBe(String(IN_RANGE));
   });
 
   it('falls back to min on invalid', () => {
-    expect(normalizeIlvlOnBlur('abc')).toBe('240');
+    expect(normalizeIlvlOnBlur('abc')).toBe(MIN);
   });
 });
 
