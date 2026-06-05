@@ -124,7 +124,25 @@
     "keyMaxPlaceholder": "Maximum key level",
     "joinEvent": "Join event",
     "joining": "Joining…",
-    "saveError": "Could not save your character. Check your connection and try again."
+    "saveError": "Could not save your character. Check your connection and try again.",
+    "choice": {
+      "loginBattlenet": "Sign in with Battle.net",
+      "or": "or",
+      "joinAsGuest": "Join as guest",
+      "guestHint": "Joining as a guest — enter your character details manually."
+    },
+    "picker": {
+      "loadingCharacters": "Loading your characters…",
+      "loadingDetails": "Loading character details…",
+      "notLinked": "Link your Battle.net account to pick one of your characters.",
+      "linkBattlenet": "Link Battle.net",
+      "loadError": "Could not load your characters.",
+      "detailError": "Could not load this character's details.",
+      "retry": "Retry",
+      "empty": "No characters found on your Battle.net account.",
+      "level": "Level {{level}}",
+      "joinEvent": "Join with this character"
+    }
   },
   "common": {
     "appName": "Mythic Plus Party Shuffle",

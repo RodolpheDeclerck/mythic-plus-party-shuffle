@@ -42,16 +42,16 @@
 ## 7. Frontend — link Battle.net + picker
 
 - [x] 7.1 Add proxy routes under `app/api/be/...` and a typed client for `GET /api/blizzard/characters` and `.../:realm/:name` (UI calls only `/api/be/...`). Note: the existing `app/api/be/[[...path]]` catch-all already forwards the Auth0 Bearer token, so no new proxy route was needed — added `blizzardClient.ts` + `useBlizzardRoster` hook + types.
-- [ ] 7.2 Add a "Link Battle.net" entry point shown when the roster call returns the not-linked signal
-- [ ] 7.3 Build the character picker starting from the user's v0.vercel export (pasted in at implementation time): keep the v0 JSX/Tailwind, but adapt it to the project — reuse the existing `@/components/ui/*` components (no duplicated Button/Input from the export), replace mock data with the `/api/be/...` client (7.1), route all text through i18n keys (group 8), and align colors with the project's palette. Cover roster list, loading/empty/error states, and per-character enrichment on selection
-- [ ] 7.4 Build the join gate on the event-register screen: route logged-in users to the picker; route not-logged-in users to a Battle.net login screen with a "Join as guest" button below
-- [ ] 7.5 Wire "Join as guest" to render the existing `EventRegisterForm` unchanged (manual form kept as the guest path)
-- [ ] 7.6 On picker submit, build the existing `POST /api/characters` payload (auto-filled fields + default keystone levels); keep `role`/`bloodLust`/`battleRez` derivation server-side; confirm the join flow is unchanged after selection for both paths
+- [x] 7.2 Add a "Link Battle.net" entry point shown when the roster call returns the not-linked signal
+- [x] 7.3 Build the character picker starting from the user's v0.vercel export (pasted in at implementation time): keep the v0 JSX/Tailwind, but adapt it to the project — reuse the existing `@/components/ui/*` components (no duplicated Button/Input from the export), replace mock data with the `/api/be/...` client (7.1), route all text through i18n keys (group 8), and align colors with the project's palette. Cover roster list, loading/empty/error states, and per-character enrichment on selection
+- [x] 7.4 Build the join gate on the event-register screen: route logged-in users to the picker; route not-logged-in users to a Battle.net login screen with a "Join as guest" button below
+- [x] 7.5 Wire "Join as guest" to render the existing `EventRegisterForm` unchanged (manual form kept as the guest path)
+- [x] 7.6 On picker submit, build the existing `POST /api/characters` payload (auto-filled fields + default keystone levels); keep `role`/`bloodLust`/`battleRez` derivation server-side; confirm the join flow is unchanged after selection for both paths
 
 ## 8. i18n
 
-- [ ] 8.1 Add EN keys (join gate, picker, Battle.net login + "Join as guest", link-account CTA, loading/empty/error) to `app/locales/en/translation.json`
-- [ ] 8.2 Add matching FR keys to `app/locales/fr/translation.json`
+- [x] 8.1 Add EN keys (join gate, picker, Battle.net login + "Join as guest", link-account CTA, loading/empty/error) to `app/locales/en/translation.json`
+- [x] 8.2 Add matching FR keys to `app/locales/fr/translation.json`
 
 ## 9. Verification & cleanup
 

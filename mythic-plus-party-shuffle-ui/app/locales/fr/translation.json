@@ -124,7 +124,25 @@
     "keyMaxPlaceholder": "Niveau de clé maximum",
     "joinEvent": "Rejoindre l'événement",
     "joining": "Inscription…",
-    "saveError": "Impossible d'enregistrer le personnage. Vérifiez la connexion et réessayez."
+    "saveError": "Impossible d'enregistrer le personnage. Vérifiez la connexion et réessayez.",
+    "choice": {
+      "loginBattlenet": "Se connecter avec Battle.net",
+      "or": "ou",
+      "joinAsGuest": "Rejoindre en invité",
+      "guestHint": "Inscription en invité — saisissez votre personnage manuellement."
+    },
+    "picker": {
+      "loadingCharacters": "Chargement de vos personnages…",
+      "loadingDetails": "Chargement des détails du personnage…",
+      "notLinked": "Liez votre compte Battle.net pour choisir un de vos personnages.",
+      "linkBattlenet": "Lier Battle.net",
+      "loadError": "Impossible de charger vos personnages.",
+      "detailError": "Impossible de charger les détails de ce personnage.",
+      "retry": "Réessayer",
+      "empty": "Aucun personnage trouvé sur votre compte Battle.net.",
+      "level": "Niveau {{level}}",
+      "joinEvent": "Rejoindre avec ce personnage"
+    }
   },
   "common": {
     "appName": "Mythic Plus Party Shuffle",

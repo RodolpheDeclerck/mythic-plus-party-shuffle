@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 
-import EventRegisterForm from './EventRegisterForm/EventRegisterForm';
+import EventRegisterGate from './EventRegisterGate';
 import {
   RiftAuthCardFrame,
   RiftPortalMain,
@@ -58,7 +58,7 @@ function EventRegisterPageContent() {
           </div>
         )}
 
-        <EventRegisterForm />
+        <EventRegisterGate />
       </RiftAuthCardFrame>
     </RiftPortalMain>
   );
