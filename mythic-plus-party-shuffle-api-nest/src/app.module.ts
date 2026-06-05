@@ -10,6 +10,7 @@ import { RedisModule } from './shared/redis/redis.module';
 import { WebSocketModule } from './shared/websocket/websocket.module';
 import { CharacterModule } from './modules/character/character.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { BlizzardModule } from './modules/blizzard/blizzard.module';
 
 @Module({
   imports: [
@@ -31,6 +32,9 @@ import { AuthModule } from './modules/auth/auth.module';
 
     // Auth
     AuthModule,
+
+    // Blizzard (Token Vault + Profile API)
+    BlizzardModule,
 
     // Modules métier
     UserModule,
