@@ -11,7 +11,10 @@ export class BattlenetNotLinkedException extends HttpException {
 
   constructor() {
     super(
-      { code: BattlenetNotLinkedException.CODE, message: 'Battle.net account not linked' },
+      {
+        code: BattlenetNotLinkedException.CODE,
+        message: 'Battle.net account not linked',
+      },
       HttpStatus.CONFLICT,
     );
   }

@@ -32,7 +32,10 @@ describe('BlizzardService', () => {
 
   function makeService(fetchImpl: jest.Mock) {
     global.fetch = fetchImpl as unknown as typeof fetch;
-    return new BlizzardService(createConfig() as any, createTokenVault() as any);
+    return new BlizzardService(
+      createConfig() as any,
+      createTokenVault() as any,
+    );
   }
 
   describe('getCharacters', () => {
@@ -42,8 +45,18 @@ describe('BlizzardService', () => {
           wow_accounts: [
             {
               characters: [
-                { name: 'Thrall', level: 70, realm: { slug: 'illidan', name: 'Illidan' }, playable_class: { id: 7 } },
-                { name: 'Jaina', level: 70, realm: { slug: 'area-52', name: 'Area 52' }, playable_class: { id: 8 } },
+                {
+                  name: 'Thrall',
+                  level: 70,
+                  realm: { slug: 'illidan', name: 'Illidan' },
+                  playable_class: { id: 7 },
+                },
+                {
+                  name: 'Jaina',
+                  level: 70,
+                  realm: { slug: 'area-52', name: 'Area 52' },
+                  playable_class: { id: 8 },
+                },
               ],
             },
           ],
@@ -54,8 +67,20 @@ describe('BlizzardService', () => {
       const roster = await service.getCharacters('auth', 1);
 
       expect(roster).toEqual([
-        { name: 'Thrall', realmSlug: 'illidan', realmName: 'Illidan', characterClass: CharacterClass.Shaman, level: 70 },
-        { name: 'Jaina', realmSlug: 'area-52', realmName: 'Area 52', characterClass: CharacterClass.Mage, level: 70 },
+        {
+          name: 'Thrall',
+          realmSlug: 'illidan',
+          realmName: 'Illidan',
+          characterClass: CharacterClass.Shaman,
+          level: 70,
+        },
+        {
+          name: 'Jaina',
+          realmSlug: 'area-52',
+          realmName: 'Area 52',
+          characterClass: CharacterClass.Mage,
+          level: 70,
+        },
       ]);
       const [url] = fetchMock.mock.calls[0];
       expect(url).toContain('/profile/user/wow');
@@ -63,7 +88,9 @@ describe('BlizzardService', () => {
     });
 
     it('returns an empty list when there are no characters', async () => {
-      const service = makeService(jest.fn().mockResolvedValue(jsonResponse({ wow_accounts: [] })));
+      const service = makeService(
+        jest.fn().mockResolvedValue(jsonResponse({ wow_accounts: [] })),
+      );
       expect(await service.getCharacters('auth', 1)).toEqual([]);
     });
 
@@ -73,8 +100,18 @@ describe('BlizzardService', () => {
           wow_accounts: [
             {
               characters: [
-                { name: 'Known', level: 70, realm: { slug: 'r', name: 'R' }, playable_class: { id: 1 } },
-                { name: 'Future', level: 70, realm: { slug: 'r', name: 'R' }, playable_class: { id: 999 } },
+                {
+                  name: 'Known',
+                  level: 70,
+                  realm: { slug: 'r', name: 'R' },
+                  playable_class: { id: 1 },
+                },
+                {
+                  name: 'Future',
+                  level: 70,
+                  realm: { slug: 'r', name: 'R' },
+                  playable_class: { id: 999 },
+                },
               ],
             },
           ],
@@ -115,39 +152,75 @@ describe('BlizzardService', () => {
     });
 
     it('throws NotFoundException on a 404', async () => {
-      const service = makeService(jest.fn().mockResolvedValue(jsonResponse({}, 404)));
-      await expect(service.getCharacter('auth', 1, 'r', 'ghost')).rejects.toThrow(
-        'Character not found',
+      const service = makeService(
+        jest.fn().mockResolvedValue(jsonResponse({}, 404)),
       );
+      await expect(
+        service.getCharacter('auth', 1, 'r', 'ghost'),
+      ).rejects.toThrow('Character not found');
     });
   });
 
   describe('mapToCharacter (Frost disambiguation)', () => {
     it('maps Mage Frost (spec 64) to Mage_Frost', () => {
-      const service = new BlizzardService(createConfig() as any, createTokenVault() as any);
-      const r = service.mapToCharacter({ name: 'M', realmSlug: 'r', classId: 8, specId: 64, averageItemLevel: 600 });
+      const service = new BlizzardService(
+        createConfig() as any,
+        createTokenVault() as any,
+      );
+      const r = service.mapToCharacter({
+        name: 'M',
+        realmSlug: 'r',
+        classId: 8,
+        specId: 64,
+        averageItemLevel: 600,
+      });
       expect(r.specialization).toBe(Specialization.Mage_Frost);
       expect(r.characterClass).toBe(CharacterClass.Mage);
     });
 
     it('maps Death Knight Frost (spec 251) to DeathKnight_Frost', () => {
-      const service = new BlizzardService(createConfig() as any, createTokenVault() as any);
-      const r = service.mapToCharacter({ name: 'D', realmSlug: 'r', classId: 6, specId: 251, averageItemLevel: 600 });
+      const service = new BlizzardService(
+        createConfig() as any,
+        createTokenVault() as any,
+      );
+      const r = service.mapToCharacter({
+        name: 'D',
+        realmSlug: 'r',
+        classId: 6,
+        specId: 251,
+        averageItemLevel: 600,
+      });
       expect(r.specialization).toBe(Specialization.DeathKnight_Frost);
       expect(r.characterClass).toBe(CharacterClass.Deathknight);
     });
 
     it('rejects an unknown class id', () => {
-      const service = new BlizzardService(createConfig() as any, createTokenVault() as any);
+      const service = new BlizzardService(
+        createConfig() as any,
+        createTokenVault() as any,
+      );
       expect(() =>
-        service.mapToCharacter({ name: 'X', realmSlug: 'r', classId: 999, specId: 64 }),
+        service.mapToCharacter({
+          name: 'X',
+          realmSlug: 'r',
+          classId: 999,
+          specId: 64,
+        }),
       ).toThrow(UnmappableBlizzardCharacterException);
     });
 
     it('rejects an unknown spec id', () => {
-      const service = new BlizzardService(createConfig() as any, createTokenVault() as any);
+      const service = new BlizzardService(
+        createConfig() as any,
+        createTokenVault() as any,
+      );
       expect(() =>
-        service.mapToCharacter({ name: 'X', realmSlug: 'r', classId: 8, specId: 99999 }),
+        service.mapToCharacter({
+          name: 'X',
+          realmSlug: 'r',
+          classId: 8,
+          specId: 99999,
+        }),
       ).toThrow(UnmappableBlizzardCharacterException);
     });
   });

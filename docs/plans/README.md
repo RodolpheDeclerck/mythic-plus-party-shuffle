@@ -16,6 +16,7 @@ Index des plans versionnés avec le code. **Convention de nom :** `NN-titre-en-k
 | 10 | [10-major-upgrades-deferred.md](10-major-upgrades-deferred.md) | Backlog des bumps majors reportés (Next 14→16, Auth0 3→4, @types/node 20→25) |
 | 11 | [11-fix-character-fetch-retry.md](11-fix-character-fetch-retry.md) | Retry auto + reset errorState sur la liste des participants (erreur intermittente après inscription) |
 | 12 | [12-shuffle-unit-tests.md](12-shuffle-unit-tests.md) | Tests unitaires sur `PartyService.shuffleGroups` + POC OpenSpec (spec + change scaffold) |
+| 13 | [13-blizzard-roster.md](13-blizzard-roster.md) | Inscription via le roster Battle.net (Token Vault + Blizzard Profile API), join gate loggé/invité |
 
 **Nouveau plan :** utiliser le numéro suivant (ex. `05-nom-du-plan.md`) et ajouter une ligne dans ce tableau.
 

@@ -55,7 +55,7 @@
 
 ## 9. Verification & cleanup
 
-- [ ] 9.1 Run `cd mythic-plus-party-shuffle-ui && npx jest` and the backend test suite; all green
-- [ ] 9.2 Manual end-to-end: (a) logged-in: link Battle.net → list roster → select → enrich → join; (b) guest: not-logged-in → "Join as guest" → manual form → join
-- [ ] 9.3 Cleanup: remove only genuinely dead code, unused imports, and stale comments — do NOT remove the manual form (it is the guest path)
-- [ ] 9.4 Update `mythic-plus-party-shuffle-ui/ARCHITECTURE.md`, add `docs/plans/NN-blizzard-roster.md` + index row, and update the relevant README
+- [x] 9.1 Run `cd mythic-plus-party-shuffle-ui && npx jest` and the backend test suite; all green (UI 106, backend 152; ESLint/Prettier clean)
+- [ ] 9.2 Manual end-to-end: (a) logged-in: link Battle.net → list roster → select → enrich → join; (b) guest: not-logged-in → "Join as guest" → manual form → join — **owner/manual (needs real Auth0 + Battle.net)**
+- [x] 9.3 Cleanup: remove only genuinely dead code, unused imports, and stale comments — do NOT remove the manual form (it is the guest path)
+- [x] 9.4 Update `mythic-plus-party-shuffle-ui/ARCHITECTURE.md`, add `docs/plans/13-blizzard-roster.md` + index row, and update the relevant README (API README done in group 2)

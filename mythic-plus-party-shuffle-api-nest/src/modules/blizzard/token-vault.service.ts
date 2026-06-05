@@ -1,4 +1,8 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BattlenetNotLinkedException } from './errors';
 
@@ -86,7 +90,10 @@ export class TokenVaultService {
       const errorCode =
         typeof errorBody?.error === 'string' ? errorBody.error : undefined;
 
-      if (response.status === 403 || (errorCode && NOT_LINKED_ERRORS.has(errorCode))) {
+      if (
+        response.status === 403 ||
+        (errorCode && NOT_LINKED_ERRORS.has(errorCode))
+      ) {
         throw new BattlenetNotLinkedException();
       }
 
@@ -98,13 +105,16 @@ export class TokenVaultService {
 
     const data = await this.safeJson(response);
     if (!data?.access_token) {
-      throw new InternalServerErrorException('Token exchange returned no token');
+      throw new InternalServerErrorException(
+        'Token exchange returned no token',
+      );
     }
 
     const expiresInMs = (Number(data.expires_in) || 0) * 1000;
     this.cache.set(userId, {
       token: data.access_token,
-      expiresAt: Date.now() + Math.max(0, expiresInMs - EXPIRY_SAFETY_MARGIN_MS),
+      expiresAt:
+        Date.now() + Math.max(0, expiresInMs - EXPIRY_SAFETY_MARGIN_MS),
     });
 
     return data.access_token;

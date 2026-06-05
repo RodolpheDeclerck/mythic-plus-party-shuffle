@@ -7,7 +7,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { CharacterClass, Specialization } from '@prisma/client';
 import { TokenVaultService } from './token-vault.service';
-import { resolveCharacterClass, resolveSpecialization } from './blizzard-id-maps';
+import {
+  resolveCharacterClass,
+  resolveSpecialization,
+} from './blizzard-id-maps';
 import { UnmappableBlizzardCharacterException } from './errors';
 
 /** A lightweight roster entry from the Account Profile Summary (no spec/iLevel). */
@@ -42,7 +45,10 @@ export class BlizzardService {
    * Characters whose class id we cannot map are skipped (logged), so a single
    * unknown class never breaks the whole roster.
    */
-  async getCharacters(authToken: string, userId: number): Promise<RosterCharacter[]> {
+  async getCharacters(
+    authToken: string,
+    userId: number,
+  ): Promise<RosterCharacter[]> {
     const data = await this.blizzardGet('/profile/user/wow', authToken, userId);
 
     const wowAccounts: any[] = Array.isArray(data?.wow_accounts)
@@ -131,7 +137,10 @@ export class BlizzardService {
     authToken: string,
     userId: number,
   ): Promise<any> {
-    const blizzardToken = await this.tokenVault.getBlizzardToken(authToken, userId);
+    const blizzardToken = await this.tokenVault.getBlizzardToken(
+      authToken,
+      userId,
+    );
     const host = this.config.get<string>('blizzard.apiHost');
     const namespace = this.config.get<string>('blizzard.namespace');
     const locale = this.config.get<string>('blizzard.locale');

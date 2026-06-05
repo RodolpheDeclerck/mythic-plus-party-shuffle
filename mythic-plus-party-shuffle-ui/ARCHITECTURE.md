@@ -12,6 +12,8 @@
 | `usePartyManagement` | Parties, shuffle, clear, API persistence. |
 | `useCharacterManagement` | Participant character CRUD (created character / localStorage). |
 | `useWebSocket` | Refreshes characters, parties, and event detail when the server notifies. |
+| `useBlizzardRoster` | GET the signed-in user's WoW roster via `/api/be/api/blizzard/characters`; exposes a `notLinked` state (HTTP 409 `BATTLENET_NOT_LINKED`). |
+| `useBlizzardJoin` | Registers a selected Blizzard character through `POST /api/characters` (auto-filled fields, default keystones). |
 
 ## Flow (simplified)
 
@@ -42,7 +44,7 @@ Character load failures use `CHARACTERS_FETCH_FAILED`; visible copy goes through
 - **`(auth)`** — `/login`, `/register`, `/forgot-password` (server `page.tsx` + `*PageClient`).
 - **`(legal)`** — `/terms`, `/privacy`.
 - **`event/create`** — colocated `CreateEventPage.tsx` with the route.
-- **`event/register`** — colocated `EventRegisterForm/` (also imported by `ReRegisterEventDialog`).
+- **`event/register`** — `EventRegisterGate` routes by auth state: signed-in users get the **Blizzard character picker** (`BlizzardPicker/`), guests get `EventJoinChoice` → the manual `EventRegisterForm/` (also imported by `ReRegisterEventDialog`). The picker fetches a light roster and enriches the selected character on click; class/spec are mapped from Blizzard IDs server-side, role/bloodlust/battleRez are derived client-side.
 - **`dashboard`** — colocated `Dashboard.tsx` with the route.
 - **`lib/event/`** — event-domain helpers (e.g. error codes for `EventView`), distinct from generic `lib/utils.ts` / `utils/`.
 

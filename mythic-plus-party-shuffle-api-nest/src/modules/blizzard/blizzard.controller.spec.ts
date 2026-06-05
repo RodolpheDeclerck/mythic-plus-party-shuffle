@@ -47,12 +47,14 @@ describe('BlizzardController', () => {
 
     it('propagates the not-linked error so the UI can show the link CTA', async () => {
       const service = createService();
-      service.getCharacters.mockRejectedValue(new BattlenetNotLinkedException());
+      service.getCharacters.mockRejectedValue(
+        new BattlenetNotLinkedException(),
+      );
       const controller = new BlizzardController(service as any);
 
-      await expect(controller.getCharacters(authedReq())).rejects.toBeInstanceOf(
-        BattlenetNotLinkedException,
-      );
+      await expect(
+        controller.getCharacters(authedReq()),
+      ).rejects.toBeInstanceOf(BattlenetNotLinkedException);
     });
   });
 
@@ -63,10 +65,19 @@ describe('BlizzardController', () => {
       service.getCharacter.mockResolvedValue(enriched);
       const controller = new BlizzardController(service as any);
 
-      const result = await controller.getCharacter(authedReq('tok', 3), 'illidan', 'thrall');
+      const result = await controller.getCharacter(
+        authedReq('tok', 3),
+        'illidan',
+        'thrall',
+      );
 
       expect(result).toBe(enriched);
-      expect(service.getCharacter).toHaveBeenCalledWith('tok', 3, 'illidan', 'thrall');
+      expect(service.getCharacter).toHaveBeenCalledWith(
+        'tok',
+        3,
+        'illidan',
+        'thrall',
+      );
     });
   });
 });

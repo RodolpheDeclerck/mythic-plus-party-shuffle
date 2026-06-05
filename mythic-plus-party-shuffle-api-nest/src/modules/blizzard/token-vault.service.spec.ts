@@ -40,7 +40,9 @@ describe('TokenVaultService', () => {
     it('exchanges the Auth0 token and returns the Blizzard access token', async () => {
       const fetchMock = jest
         .fn()
-        .mockResolvedValue(okResponse({ access_token: 'blizz-token', expires_in: 3600 }));
+        .mockResolvedValue(
+          okResponse({ access_token: 'blizz-token', expires_in: 3600 }),
+        );
       global.fetch = fetchMock as unknown as typeof fetch;
       const service = new TokenVaultService(createConfig() as any);
 
@@ -49,16 +51,20 @@ describe('TokenVaultService', () => {
       expect(token).toBe('blizz-token');
       const [url, init] = fetchMock.mock.calls[0];
       expect(url).toBe('https://tenant.auth0.com/oauth/token');
-      const sent = (init.body as URLSearchParams);
+      const sent = init.body as URLSearchParams;
       expect(sent.get('subject_token')).toBe('auth0-token');
       expect(sent.get('connection')).toBe('battlenet');
-      expect(sent.get('grant_type')).toContain('federated-connection-access-token');
+      expect(sent.get('grant_type')).toContain(
+        'federated-connection-access-token',
+      );
     });
 
     it('caches the token and does not call fetch again within its lifetime', async () => {
       const fetchMock = jest
         .fn()
-        .mockResolvedValue(okResponse({ access_token: 'cached', expires_in: 3600 }));
+        .mockResolvedValue(
+          okResponse({ access_token: 'cached', expires_in: 3600 }),
+        );
       global.fetch = fetchMock as unknown as typeof fetch;
       const service = new TokenVaultService(createConfig() as any);
 
@@ -71,7 +77,9 @@ describe('TokenVaultService', () => {
     it('re-exchanges once the cached token has expired', async () => {
       const fetchMock = jest
         .fn()
-        .mockResolvedValue(okResponse({ access_token: 'short', expires_in: 0 }));
+        .mockResolvedValue(
+          okResponse({ access_token: 'short', expires_in: 0 }),
+        );
       global.fetch = fetchMock as unknown as typeof fetch;
       const service = new TokenVaultService(createConfig() as any);
 
@@ -85,29 +93,35 @@ describe('TokenVaultService', () => {
     it('throws BattlenetNotLinkedException on a 403', async () => {
       global.fetch = jest
         .fn()
-        .mockResolvedValue(errorResponse(403, { error: 'access_denied' })) as unknown as typeof fetch;
+        .mockResolvedValue(
+          errorResponse(403, { error: 'access_denied' }),
+        ) as unknown as typeof fetch;
       const service = new TokenVaultService(createConfig() as any);
 
-      await expect(service.getBlizzardToken('auth0-token', 1)).rejects.toBeInstanceOf(
-        BattlenetNotLinkedException,
-      );
+      await expect(
+        service.getBlizzardToken('auth0-token', 1),
+      ).rejects.toBeInstanceOf(BattlenetNotLinkedException);
     });
 
     it('throws BattlenetNotLinkedException on a not-linked error code', async () => {
       global.fetch = jest
         .fn()
-        .mockResolvedValue(errorResponse(400, { error: 'invalid_grant' })) as unknown as typeof fetch;
+        .mockResolvedValue(
+          errorResponse(400, { error: 'invalid_grant' }),
+        ) as unknown as typeof fetch;
       const service = new TokenVaultService(createConfig() as any);
 
-      await expect(service.getBlizzardToken('auth0-token', 1)).rejects.toBeInstanceOf(
-        BattlenetNotLinkedException,
-      );
+      await expect(
+        service.getBlizzardToken('auth0-token', 1),
+      ).rejects.toBeInstanceOf(BattlenetNotLinkedException);
     });
 
     it('throws a generic error on other non-ok responses', async () => {
       global.fetch = jest
         .fn()
-        .mockResolvedValue(errorResponse(500, { error: 'server_error' })) as unknown as typeof fetch;
+        .mockResolvedValue(
+          errorResponse(500, { error: 'server_error' }),
+        ) as unknown as typeof fetch;
       const service = new TokenVaultService(createConfig() as any);
 
       await expect(service.getBlizzardToken('auth0-token', 1)).rejects.toThrow(
@@ -118,7 +132,9 @@ describe('TokenVaultService', () => {
     it('throws when the network request itself fails', async () => {
       global.fetch = jest
         .fn()
-        .mockRejectedValue(new Error('ECONNREFUSED')) as unknown as typeof fetch;
+        .mockRejectedValue(
+          new Error('ECONNREFUSED'),
+        ) as unknown as typeof fetch;
       const service = new TokenVaultService(createConfig() as any);
 
       await expect(service.getBlizzardToken('auth0-token', 1)).rejects.toThrow(
