@@ -20,18 +20,18 @@
 
 ## 4. Backend — Blizzard client + mapping
 
-- [ ] 4.1 Add `BLIZZARD_CLASS_ID_TO_ENUM` (13 classes) and `BLIZZARD_SPEC_ID_TO_ENUM` (39 specs) tables to `CharacterClass`/`Specialization`
-- [ ] 4.2 Implement `BlizzardService.getCharacters()`: call Account Profile Summary (US host + namespace), return name/realm/class
-- [ ] 4.3 Implement `BlizzardService.getCharacter(realm, name)`: call Character Profile Summary, return `average_item_level` + `active_spec`
-- [ ] 4.4 Implement `mapToCharacter()` using the ID tables; reject unknown class/spec IDs
-- [ ] 4.5 Unit tests: roster mapping, enrichment mapping, Frost disambiguation (Mage vs DK), unknown-ID rejection, empty roster
+- [x] 4.1 Add `BLIZZARD_CLASS_ID_TO_ENUM` (13 classes) and `BLIZZARD_SPEC_ID_TO_ENUM` (39 specs) tables to `CharacterClass`/`Specialization`
+- [x] 4.2 Implement `BlizzardService.getCharacters()`: call Account Profile Summary (US host + namespace), return name/realm/class
+- [x] 4.3 Implement `BlizzardService.getCharacter(realm, name)`: call Character Profile Summary, return `average_item_level` + `active_spec`
+- [x] 4.4 Implement `mapToCharacter()` using the ID tables; reject unknown class/spec IDs
+- [x] 4.5 Unit tests: roster mapping, enrichment mapping, Frost disambiguation (Mage vs DK), unknown-ID rejection, empty roster
 
 ## 5. Backend — routes
 
-- [ ] 5.1 Add `GET /api/blizzard/characters` (fixed route) guarded by `JwtAuthGuard`
-- [ ] 5.2 Add `GET /api/blizzard/characters/:realm/:name` (parameterized route, declared after the fixed one)
-- [ ] 5.3 Wire `blizzard` module into the app; verify guard rejects unauthenticated requests
-- [ ] 5.4 Controller unit tests: auth required, list, enrich, not-linked surfaces link signal
+- [x] 5.1 Add `GET /api/blizzard/characters` (fixed route) guarded by `JwtAuthGuard`
+- [x] 5.2 Add `GET /api/blizzard/characters/:realm/:name` (parameterized route, declared after the fixed one)
+- [x] 5.3 Wire `blizzard` module into the app; verify guard rejects unauthenticated requests
+- [x] 5.4 Controller unit tests: auth required, list, enrich, not-linked surfaces link signal
 
 ## 6. Frontend — item level bounds
 

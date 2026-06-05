@@ -16,3 +16,19 @@ export class BattlenetNotLinkedException extends HttpException {
     );
   }
 }
+
+/**
+ * Thrown when a Blizzard character's class or specialization id has no mapping
+ * to our enums (e.g. a brand-new class we don't know yet). Surfaced as 502 so we
+ * never persist a character with a wrong/guessed specialization.
+ */
+export class UnmappableBlizzardCharacterException extends HttpException {
+  static readonly CODE = 'BLIZZARD_UNMAPPABLE_CHARACTER';
+
+  constructor(detail: string) {
+    super(
+      { code: UnmappableBlizzardCharacterException.CODE, message: detail },
+      HttpStatus.BAD_GATEWAY,
+    );
+  }
+}
